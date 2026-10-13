@@ -27,10 +27,10 @@ class AmneziaUrlDecoderTest {
             jmax = 70,
             s1 = 15,
             s2 = 30,
-            h1 = 12345678L,
-            h2 = 87654321L,
-            h3 = 11223344L,
-            h4 = 44332211L,
+            h1 = "12345678",
+            h2 = "87654321",
+            h3 = "11223344",
+            h4 = "44332211",
             mtu = 1280
         )
 
@@ -58,10 +58,10 @@ class AmneziaUrlDecoderTest {
         assertEquals(70, decodedProfile.jmax)
         assertEquals(15, decodedProfile.s1)
         assertEquals(30, decodedProfile.s2)
-        assertEquals(12345678L, decodedProfile.h1)
-        assertEquals(87654321L, decodedProfile.h2)
-        assertEquals(11223344L, decodedProfile.h3)
-        assertEquals(44332211L, decodedProfile.h4)
+        assertEquals("12345678", decodedProfile.h1)
+        assertEquals("87654321", decodedProfile.h2)
+        assertEquals("11223344", decodedProfile.h3)
+        assertEquals("44332211", decodedProfile.h4)
     }
 
     @Test
@@ -102,5 +102,13 @@ class AmneziaUrlDecoderTest {
         assertEquals("0bA9rm0TGBuN7Ii1TtcWgWXm/0cE4lnec+BQfOFFwhQ=", profile.publicKey)
         assertEquals("OlYu5feHc8ZWaZTTwc75qHEy6eFpnoIysUdKKh11okA=", profile.presharedKey)
         assertEquals("10.8.1.6/32", profile.clientIp)
+        assertEquals("1351553658-1920902942", profile.h1)
+        assertEquals("1985824122-2031951811", profile.h2)
+        assertEquals("2100088783-2119911158", profile.h3)
+        assertEquals("2128748706-2129059843", profile.h4)
+        assertEquals(37, profile.s3)
+        assertEquals(9, profile.s4)
+        assertEquals("<r 2><b 0x858000010001000000000669636c6f756403636f6d0000010001c00c000100010000105a00044d583737>", profile.i1)
+        assertEquals(null, profile.i2)
     }
 }

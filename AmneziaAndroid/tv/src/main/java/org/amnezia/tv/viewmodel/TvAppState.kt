@@ -95,6 +95,7 @@ class TvAppState(
 
     fun loadProfiles() {
         val loaded = storage.loadProfiles()
+
         _profiles.value = loaded
 
         if (loaded.isEmpty()) {
@@ -141,6 +142,7 @@ class TvAppState(
     }
 
     fun toggleConnection() {
+        _errorMessage.value = null
         scope.launch {
             if (connectionState.value.isConnected || connectionState.value.isBusy) {
                 runCatching { tunnelService.stopTunnel() }
@@ -193,6 +195,7 @@ class TvAppState(
             trimmed.startsWith("{") -> AmneziaUrlDecoder.decode(trimmed)
             else -> AmneziaUrlDecoder.decode("vpn://$trimmed")
         }
+        profile.rawConfig = trimmed
         addProfile(profile)
         return profile
     }

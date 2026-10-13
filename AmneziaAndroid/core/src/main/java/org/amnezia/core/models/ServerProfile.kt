@@ -22,13 +22,24 @@ data class ServerProfile(
     var jmax: Int? = null,
     var s1: Int? = null,
     var s2: Int? = null,
-    var h1: Long? = null,
-    var h2: Long? = null,
-    var h3: Long? = null,
-    var h4: Long? = null,
+    // AWG 2.0: cookie-reply / transport junk sizes
+    var s3: Int? = null,
+    var s4: Int? = null,
+    // Magic headers: a single value ("123") or, since AWG 2.0, a range ("123-456")
+    var h1: String? = null,
+    var h2: String? = null,
+    var h3: String? = null,
+    var h4: String? = null,
+    // AWG 1.5+/2.0 special junk packets (e.g. "<r 2><b 0x...>")
+    var i1: String? = null,
+    var i2: String? = null,
+    var i3: String? = null,
+    var i4: String? = null,
+    var i5: String? = null,
     var mtu: Int = 1280,
     var pingMs: Long? = null,
-    var flagEmoji: String = "🌐"
+    var flagEmoji: String = "🌐",
+    var rawConfig: String? = null
 ) {
     val endpointString: String
         get() = if (host.isNotEmpty()) "$host:$port" else "Not configured"

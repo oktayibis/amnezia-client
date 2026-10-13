@@ -39,28 +39,27 @@ fun TvFocusableCard(
     var isFocused by remember { mutableStateOf(false) }
 
     val scale by animateFloatAsState(
-        targetValue = if (isFocused) 1.03f else 1.0f,
-        animationSpec = tween(durationMillis = 200),
+        targetValue = if (isFocused) 1.05f else 1.0f,
+        animationSpec = tween(durationMillis = 150),
         label = "tvCardScale"
     )
 
     val borderColor by animateColorAsState(
-        targetValue = if (isFocused) FocusBorderColor else defaultBorderColor,
-        animationSpec = tween(durationMillis = 200),
+        targetValue = if (isFocused) CyberGreen else defaultBorderColor,
+        animationSpec = tween(durationMillis = 150),
         label = "tvCardBorder"
     )
 
-    val currentBorderWidth = if (isFocused) 2.dp else borderWidth
+    val currentBorderWidth = if (isFocused) 2.5.dp else borderWidth
 
     Surface(
         onClick = onClick,
         modifier = modifier
             .scale(scale)
-            .onFocusChanged { isFocused = it.isFocused }
-            .focusable(),
+            .onFocusChanged { isFocused = it.isFocused },
         shape = shape,
-        color = if (isFocused) Color(0xFF222B3D) else backgroundColor,
-        border = BorderStroke(currentBorderWidth, borderColor)
+        color = if (isFocused) Color(0xFF223048) else backgroundColor,
+        border = BorderStroke(currentBorderWidth, if (isFocused) Color.White else borderColor)
     ) {
         Box {
             content(isFocused)

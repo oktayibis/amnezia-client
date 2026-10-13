@@ -36,69 +36,86 @@ import org.amnezia.tv.ui.theme.SurfaceCard
 import org.amnezia.tv.ui.theme.TextPrimary
 import org.amnezia.tv.ui.theme.TextSecondary
 
+import org.amnezia.tv.ui.components.TvFocusableButton
+
 const val TV_PRIVACY_POLICY_URL = "https://github.com/oktayibis/amnezia-clinet/blob/main/PRIVACY.md"
 
-/** First-launch VpnService disclosure for Android TV (D-pad friendly, single focus target). */
+/** First-launch VpnService disclosure for Android TV (fits single 540dp screen, D-pad friendly). */
 @Composable
 fun TvPrivacyNoticeScreen(onAccept: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
-            .padding(horizontal = 96.dp, vertical = 40.dp),
+            .padding(horizontal = 72.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(imageVector = Icons.Default.Security, contentDescription = null, tint = CyberGreen, modifier = Modifier.size(56.dp))
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Your Privacy Comes First", color = TextPrimary, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Icon(
+            imageVector = Icons.Default.Security,
+            contentDescription = null,
+            tint = CyberGreen,
+            modifier = Modifier.size(36.dp)
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "AWG Connect TV is an independent, open-source client for your own WireGuard and AmneziaWG servers.",
+            text = "Your Privacy Comes First",
+            color = TextPrimary,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "AWG Connect TV is an independent client for your own WireGuard and AmneziaWG servers.",
             color = TextSecondary,
-            fontSize = 16.sp,
+            fontSize = 13.sp,
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         Column(
             modifier = Modifier
-                .widthIn(max = 760.dp)
-                .background(SurfaceCard, RoundedCornerShape(16.dp))
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .widthIn(max = 680.dp)
+                .background(SurfaceCard, RoundedCornerShape(12.dp))
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Bullet(Icons.Default.VisibilityOff, "Zero data collection", "No analytics, no accounts, no logs of your browsing, DNS queries or device.")
-            Bullet(Icons.Default.Lock, "Configs stay on this device", "Server addresses and keys are stored locally and never uploaded anywhere.")
-            Bullet(Icons.Default.SwapHoriz, "Traffic goes to your server only", "While connected, all traffic is routed to the VPN server you imported. The developer runs no servers.")
+            Bullet(Icons.Default.VisibilityOff, "Zero data collection", "No analytics, no accounts, no logs of browsing, DNS or device.")
+            Bullet(Icons.Default.Lock, "Configs stay on this device", "Server keys stored locally and never uploaded.")
+            Bullet(Icons.Default.SwapHoriz, "Traffic goes to your server only", "All traffic is routed only to the VPN server you imported.")
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(text = "Full policy: $TV_PRIVACY_POLICY_URL", color = TextSecondary, fontSize = 12.sp)
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = "Full policy: $TV_PRIVACY_POLICY_URL", color = TextSecondary.copy(alpha = 0.7f), fontSize = 11.sp)
+        Spacer(modifier = Modifier.height(14.dp))
 
-        Button(
+        TvFocusableButton(
+            text = "I Understand & Agree",
             onClick = onAccept,
-            modifier = Modifier
-                .widthIn(min = 320.dp)
-                .height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = CyberGreen, contentColor = DarkBackground),
-            shape = RoundedCornerShape(14.dp)
-        ) {
-            Text("I Understand & Agree", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-        }
+            modifier = Modifier.widthIn(min = 280.dp),
+            isPrimary = true
+        )
     }
 }
 
 @Composable
 private fun Bullet(icon: ImageVector, title: String, text: String) {
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-        Icon(imageVector = icon, contentDescription = null, tint = CyberGreen, modifier = Modifier.size(24.dp))
-        Spacer(modifier = Modifier.width(14.dp))
-        Column {
-            Text(text = title, color = TextPrimary, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
-            Text(text = text, color = TextSecondary, fontSize = 14.sp)
-        }
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Icon(imageVector = icon, contentDescription = null, tint = CyberGreen, modifier = Modifier.size(18.dp))
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = "$title: ",
+            color = TextPrimary,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+        Text(
+            text = text,
+            color = TextSecondary,
+            fontSize = 12.sp,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+        )
     }
 }

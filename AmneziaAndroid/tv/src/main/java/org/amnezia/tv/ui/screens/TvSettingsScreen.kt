@@ -72,17 +72,17 @@ fun TvSettingsScreen(
             .fillMaxSize()
             .background(DarkBackground)
             .verticalScroll(scrollState)
-            .padding(horizontal = 48.dp, vertical = 20.dp)
+            .padding(horizontal = 48.dp, vertical = 14.dp)
     ) {
         Text(
             text = "SETTINGS",
             color = TextPrimary,
-            fontSize = 24.sp,
+            fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.2.sp
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         SectionLabel("TUNNEL & SECURITY")
 
@@ -91,12 +91,13 @@ fun TvSettingsScreen(
                 connectOnLaunch = !connectOnLaunch
                 settings.connectOnLaunch = connectOnLaunch
             },
-            modifier = Modifier.padding(vertical = 4.dp)
-        ) { _ ->
+            modifier = Modifier.padding(vertical = 3.dp)
+        ) { isFocused ->
             SettingRow(
                 icon = Icons.Default.PlayArrow,
                 title = "Connect on Launch",
-                subtitle = "Automatically connect to the active server when the app opens"
+                subtitle = "Automatically connect to active server when app starts",
+                isFocused = isFocused
             ) {
                 Switch(
                     checked = connectOnLaunch,
@@ -113,16 +114,17 @@ fun TvSettingsScreen(
             onClick = {
                 runCatching { context.startActivity(Intent(Settings.ACTION_VPN_SETTINGS)) }
             },
-            modifier = Modifier.padding(vertical = 4.dp)
-        ) { _ ->
+            modifier = Modifier.padding(vertical = 3.dp)
+        ) { isFocused ->
             SettingRow(
                 icon = Icons.Default.Shield,
                 title = "Always-on VPN & Kill Switch",
-                subtitle = "Managed by Android: enable Always-on VPN and Block connections without VPN in system settings"
+                subtitle = "Configure system-level VPN lockdown in Android Settings",
+                isFocused = isFocused
             ) { }
         }
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         SectionLabel("DNS PROVIDER")
 
@@ -134,33 +136,33 @@ fun TvSettingsScreen(
                     settings.dnsProvider = provider
                 },
                 defaultBorderColor = if (isChosen) CyberGreen else SurfaceBorder,
-                modifier = Modifier.padding(vertical = 4.dp)
-            ) { _ ->
+                modifier = Modifier.padding(vertical = 3.dp)
+            ) { isFocused ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = provider.title,
                             color = if (isChosen) CyberGreen else TextPrimary,
-                            fontSize = 16.sp,
-                            fontWeight = if (isChosen) FontWeight.Bold else FontWeight.Medium
+                            fontSize = 15.sp,
+                            fontWeight = if (isChosen || isFocused) FontWeight.Bold else FontWeight.Medium
                         )
-                        Text(text = provider.subtitle, color = TextSecondary, fontSize = 12.sp)
+                        Text(text = provider.subtitle, color = TextSecondary, fontSize = 11.sp)
                     }
 
                     if (isChosen) {
                         Box(
                             modifier = Modifier
-                                .size(24.dp)
+                                .size(22.dp)
                                 .clip(CircleShape)
                                 .background(CyberGreen),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = DarkBackground, modifier = Modifier.size(16.dp))
+                            Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = DarkBackground, modifier = Modifier.size(14.dp))
                         }
                     }
                 }
@@ -168,16 +170,17 @@ fun TvSettingsScreen(
         }
 
         if (BuildConfig.DEBUG) {
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(14.dp))
             SectionLabel("DEVELOPER (DEBUG BUILD ONLY)")
             TvFocusableCard(
                 onClick = { appState.setSimulatedTunnel(!isSimulated) },
-                modifier = Modifier.padding(vertical = 4.dp)
-            ) { _ ->
+                modifier = Modifier.padding(vertical = 3.dp)
+            ) { isFocused ->
                 SettingRow(
                     icon = Icons.Default.Speed,
                     title = "Simulated Tunnel Mode",
-                    subtitle = "Fake connection flow and metrics for UI testing. Not available in release builds."
+                    subtitle = "Fake connection flow and metrics for testing on emulator",
+                    isFocused = isFocused
                 ) {
                     Switch(
                         checked = isSimulated,
@@ -188,47 +191,28 @@ fun TvSettingsScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
-        SectionLabel("PRIVACY")
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(SurfaceCard)
-                .border(1.dp, SurfaceBorder, RoundedCornerShape(16.dp))
-                .padding(20.dp)
-        ) {
-            SettingRow(
-                icon = Icons.Default.Security,
-                title = "No data collection",
-                subtitle = "Configs never leave this device. Full policy: $TV_PRIVACY_POLICY_URL"
-            ) { }
-        }
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        SectionLabel("ABOUT")
+        SectionLabel("PRIVACY & ABOUT")
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(14.dp))
                 .background(SurfaceCard)
-                .border(1.dp, SurfaceBorder, RoundedCornerShape(16.dp))
-                .padding(20.dp)
+                .border(1.dp, SurfaceBorder, RoundedCornerShape(14.dp))
+                .padding(16.dp)
         ) {
             Column {
+                AboutRow("Privacy Policy", "Zero data collection (configs stay local)")
+                Spacer(modifier = Modifier.height(8.dp))
                 AboutRow("Client Version", "${BuildConfig.VERSION_NAME} (Build ${BuildConfig.VERSION_CODE}) for Android TV")
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 AboutRow("Supported Protocols", "AmneziaWG, WireGuard", CyberGreen)
-                Spacer(modifier = Modifier.height(12.dp))
-                AboutRow("Open Source (MIT)", "github.com/oktayibis/amnezia-clinet")
             }
         }
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
@@ -237,18 +221,18 @@ private fun SectionLabel(text: String) {
     Text(
         text = text,
         color = TextSecondary,
-        fontSize = 12.sp,
+        fontSize = 11.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = 1.2.sp,
-        modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+        modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
     )
 }
 
 @Composable
 private fun AboutRow(label: String, value: String, valueColor: Color = TextPrimary) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, color = TextSecondary, fontSize = 14.sp)
-        Text(value, color = valueColor, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+        Text(label, color = TextSecondary, fontSize = 13.sp)
+        Text(value, color = valueColor, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -257,27 +241,38 @@ private fun SettingRow(
     icon: ImageVector,
     title: String,
     subtitle: String,
+    isFocused: Boolean = false,
     trailing: @Composable () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(20.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(44.dp)
+                .size(38.dp)
                 .clip(CircleShape)
-                .background(CyberGreen.copy(alpha = 0.2f)),
+                .background(if (isFocused) CyberGreen else CyberGreen.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(imageVector = icon, contentDescription = null, tint = CyberGreen, modifier = Modifier.size(24.dp))
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (isFocused) DarkBackground else CyberGreen,
+                modifier = Modifier.size(20.dp)
+            )
         }
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, color = TextPrimary, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
-            Text(text = subtitle, color = TextSecondary, fontSize = 13.sp)
+            Text(
+                text = title,
+                color = TextPrimary,
+                fontSize = 15.sp,
+                fontWeight = if (isFocused) FontWeight.Bold else FontWeight.SemiBold
+            )
+            Text(text = subtitle, color = TextSecondary, fontSize = 11.sp)
         }
         trailing()
     }
