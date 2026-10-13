@@ -124,6 +124,12 @@ xcodebuild -project AmneziaClient.xcodeproj -scheme AmneziaCoreTests -destinatio
 
 ## 🤖 Android & Android TV
 
+<p align="center">
+  <img src="AmneziaAndroid/mobile/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="AWG Connect Android icon" width="128" height="128">
+  &nbsp;&nbsp;
+  <img src="AmneziaAndroid/tv/src/main/res/drawable-xhdpi/tv_banner.png" alt="AWG Connect Android TV banner" width="228" height="128">
+</p>
+
 `AmneziaAndroid/` contains the Kotlin / Jetpack Compose counterpart with the same dark glassmorphic design system:
 
 - `core` — shared models, `vpn://` / wg-quick parsers, `ProfileStorage`, `AppSettings`, the foreground `VpnService` (`AmneziaVpnService`) and the `RealTunnelService` facade.
