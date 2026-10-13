@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Dns
@@ -45,13 +47,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.amnezia.core.models.ProtocolType
 import org.amnezia.core.models.ServerProfile
+import org.amnezia.tv.ui.components.TvFocusableButton
 import org.amnezia.tv.ui.components.TvFocusableCard
 import org.amnezia.tv.ui.theme.AwgPurple
 import org.amnezia.tv.ui.theme.CyberGreen
@@ -72,15 +77,52 @@ fun TvServersScreen(
 ) {
     val profiles by appState.profiles.collectAsStateWithLifecycle()
     val selectedProfile by appState.selectedProfile.collectAsStateWithLifecycle()
+    val clipboardManager = LocalClipboardManager.current
 
     var showAddDialog by remember { mutableStateOf(false) }
+    var initialDialogText by remember { mutableStateOf("") }
     var profileToDelete by remember { mutableStateOf<ServerProfile?>(null) }
+    var feedbackMessage by remember { mutableStateOf<String?>(null) }
+    var feedbackIsError by remember { mutableStateOf(false) }
+
+    val fileLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            try {
+                appState.importFromUri(uri)
+                feedbackMessage = "Server imported successfully from file!"
+                feedbackIsError = false
+            } catch (e: Exception) {
+                feedbackMessage = "Error importing file: ${e.localizedMessage}"
+                feedbackIsError = true
+            }
+        }
+    }
+
+    fun pasteFromClipboard() {
+        val clip = clipboardManager.getText()?.text?.toString()?.trim()
+        if (clip.isNullOrBlank()) {
+            feedbackMessage = "Clipboard is empty. Copy a VPN configuration first."
+            feedbackIsError = true
+        } else {
+            try {
+                appState.importFromText(clip)
+                feedbackMessage = "Server successfully imported from clipboard!"
+                feedbackIsError = false
+            } catch (e: Exception) {
+                // Open dialog pre-filled so user can review/edit
+                initialDialogText = clip
+                showAddDialog = true
+            }
+        }
+    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(DarkBackground)
-            .padding(horizontal = 48.dp, vertical = 20.dp)
+            .padding(horizontal = 48.dp, vertical = 14.dp)
     ) {
         // Header
         Row(
@@ -92,7 +134,7 @@ fun TvServersScreen(
                 Text(
                     text = "SERVERS",
                     color = TextPrimary,
-                    fontSize = 24.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.2.sp
                 )
@@ -112,54 +154,190 @@ fun TvServersScreen(
                 }
             }
 
-            Button(
-                onClick = { showAddDialog = true },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = CyberGreen,
-                    contentColor = DarkBackground
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("ADD SERVER", fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                TvFocusableButton(
+                    text = "PASTE CLIPBOARD",
+                    icon = Icons.Default.ContentPaste,
+                    isPrimary = true,
+                    onClick = { pasteFromClipboard() }
+                )
+                TvFocusableButton(
+                    text = "ADD SERVER",
+                    icon = Icons.Default.Add,
+                    isPrimary = false,
+                    onClick = {
+                        initialDialogText = ""
+                        showAddDialog = true
+                    }
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        // Optional Feedback Message
+        feedbackMessage?.let { msg ->
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (feedbackIsError) ErrorRed.copy(alpha = 0.15f) else CyberGreen.copy(alpha = 0.15f))
+                    .border(1.dp, if (feedbackIsError) ErrorRed.copy(alpha = 0.4f) else CyberGreen.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = msg,
+                    color = if (feedbackIsError) ErrorRed else CyberGreen,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                IconButton(
+                    onClick = { feedbackMessage = null },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Dismiss",
+                        tint = TextSecondary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
 
         if (profiles.isEmpty()) {
-            Column(
+            // TV-optimised action cards designed for remote navigation & single-screen fit
+            Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = 40.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .fillMaxWidth()
+                    .weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Storage,
-                    contentDescription = null,
-                    tint = TextSecondary,
-                    modifier = Modifier.size(64.dp)
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-                Text(
-                    text = "No VPN Servers Configured",
-                    color = TextPrimary,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "Add a server using your remote control or USB config file",
-                    color = TextSecondary,
-                    fontSize = 14.sp
-                )
+                // Card 1: Paste from Clipboard (Primary for Android TV)
+                TvFocusableCard(
+                    onClick = { pasteFromClipboard() },
+                    modifier = Modifier.weight(1f)
+                ) { isFocused ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(52.dp)
+                                .clip(CircleShape)
+                                .background(if (isFocused) CyberGreen else CyberGreen.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ContentPaste,
+                                contentDescription = null,
+                                tint = if (isFocused) DarkBackground else CyberGreen,
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "Paste from Clipboard",
+                            color = TextPrimary,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Instant 1-click import from copied WireGuard / AWG configuration. Fast & easy with TV remote app.",
+                            color = TextSecondary,
+                            fontSize = 11.sp,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 15.sp
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isFocused) CyberGreen else Color(0x1AFFFFFF))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = if (isFocused) "PRESS OK TO IMPORT" else "RECOMMENDED FOR TV",
+                                color = if (isFocused) DarkBackground else CyberGreen,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                // Card 2: Import from File / USB Drive
+                TvFocusableCard(
+                    onClick = { fileLauncher.launch("*/*") },
+                    modifier = Modifier.weight(1f)
+                ) { isFocused ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(52.dp)
+                                .clip(CircleShape)
+                                .background(if (isFocused) NeonCyan else NeonCyan.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Description,
+                                contentDescription = null,
+                                tint = if (isFocused) DarkBackground else NeonCyan,
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "Import from File / USB",
+                            color = TextPrimary,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Browse and select a .conf configuration file from internal storage or a plugged-in USB drive.",
+                            color = TextSecondary,
+                            fontSize = 11.sp,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 15.sp
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isFocused) NeonCyan else Color(0x1AFFFFFF))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = if (isFocused) "PRESS OK TO BROWSE" else "USB / LOCAL STORAGE",
+                                color = if (isFocused) DarkBackground else NeonCyan,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
             }
         } else {
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-                contentPadding = PaddingValues(bottom = 32.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(bottom = 20.dp),
+                modifier = Modifier.fillMaxSize()
             ) {
                 items(profiles, key = { it.id }) { profile ->
                     val isSelected = selectedProfile?.id == profile.id
@@ -174,10 +352,11 @@ fun TvServersScreen(
         }
     }
 
-    // Add Server Dialog
+    // Add Server Dialog (compact for TV screen height)
     if (showAddDialog) {
         TvAddServerDialog(
             appState = appState,
+            initialText = initialDialogText,
             onDismiss = { showAddDialog = false }
         )
     }
@@ -231,36 +410,36 @@ private fun TvServerCardItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp),
+                .padding(horizontal = 18.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(46.dp)
+                    .size(42.dp)
                     .clip(CircleShape)
-                    .background(if (isSelected) CyberGreen.copy(alpha = 0.2f) else Color(0x15FFFFFF)),
+                    .background(if (isFocused) CyberGreen.copy(alpha = 0.25f) else if (isSelected) CyberGreen.copy(alpha = 0.15f) else Color(0x15FFFFFF)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Dns,
                     contentDescription = null,
-                    tint = if (isSelected) CyberGreen else TextSecondary,
-                    modifier = Modifier.size(24.dp)
+                    tint = if (isFocused || isSelected) CyberGreen else TextSecondary,
+                    modifier = Modifier.size(22.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = profile.name,
                     color = TextPrimary,
-                    fontSize = 17.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(3.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val badgeColor = when (profile.protocol) {
                         ProtocolType.AMNEZIA_WG -> AwgPurple
@@ -276,7 +455,7 @@ private fun TvServerCardItem(
                         Text(
                             text = profile.protocol.displayName,
                             color = badgeColor,
-                            fontSize = 11.sp,
+                            fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -286,7 +465,7 @@ private fun TvServerCardItem(
                     Text(
                         text = "${profile.host}:${profile.port}",
                         color = TextSecondary,
-                        fontSize = 13.sp
+                        fontSize = 12.sp
                     )
                 }
             }
@@ -299,23 +478,31 @@ private fun TvServerCardItem(
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = DarkBackground, modifier = Modifier.size(16.dp))
+                        Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = DarkBackground, modifier = Modifier.size(15.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(text = "ACTIVE", color = DarkBackground, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
+            } else if (isFocused) {
+                Text(
+                    text = "PRESS OK TO SELECT",
+                    color = CyberGreen,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(end = 12.dp)
+                )
             }
 
             IconButton(
                 onClick = onDelete,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(34.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete",
-                    tint = TextSecondary.copy(alpha = 0.6f),
-                    modifier = Modifier.size(20.dp)
+                    tint = if (isFocused) ErrorRed else TextSecondary.copy(alpha = 0.6f),
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }
@@ -325,9 +512,11 @@ private fun TvServerCardItem(
 @Composable
 private fun TvAddServerDialog(
     appState: TvAppState,
+    initialText: String = "",
     onDismiss: () -> Unit
 ) {
-    var inputText by remember { mutableStateOf("") }
+    val clipboardManager = LocalClipboardManager.current
+    var inputText by remember { mutableStateOf(initialText) }
     var errorText by remember { mutableStateOf<String?>(null) }
 
     val fileLauncher = rememberLauncherForActivityResult(
@@ -347,14 +536,26 @@ private fun TvAddServerDialog(
         onDismissRequest = onDismiss,
         containerColor = SurfaceDark,
         title = {
-            Text("Add Server to TV", color = TextPrimary, fontWeight = FontWeight.Bold)
+            Text("Add Server to TV", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "Enter a vpn:// link or paste full WireGuard config below:",
-                    color = TextSecondary,
-                    fontSize = 13.sp
+                // Quick paste from clipboard button inside dialog
+                TvFocusableButton(
+                    text = "PASTE FROM CLIPBOARD",
+                    icon = Icons.Default.ContentPaste,
+                    isPrimary = true,
+                    onClick = {
+                        val clip = clipboardManager.getText()?.text?.toString()?.trim()
+                        if (!clip.isNullOrBlank()) {
+                            inputText = clip
+                            errorText = null
+                        } else {
+                            errorText = "Clipboard is empty!"
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -365,10 +566,10 @@ private fun TvAddServerDialog(
                         inputText = it
                         errorText = null
                     },
-                    placeholder = { Text("vpn://...", color = TextSecondary.copy(alpha = 0.5f)) },
+                    placeholder = { Text("Paste vpn://... or WireGuard config", color = TextSecondary.copy(alpha = 0.5f), fontSize = 12.sp) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(130.dp),
+                        .height(90.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = CyberGreen,
                         unfocusedBorderColor = SurfaceBorder,
@@ -377,35 +578,35 @@ private fun TvAddServerDialog(
                         focusedContainerColor = SurfaceCard,
                         unfocusedContainerColor = SurfaceCard
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(10.dp)
                 )
 
                 if (errorText != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = errorText ?: "", color = ErrorRed, fontSize = 12.sp)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(text = errorText ?: "", color = ErrorRed, fontSize = 11.sp)
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-                Button(
+                TvFocusableButton(
+                    text = "SELECT CONFIG FROM STORAGE / USB",
+                    icon = Icons.Default.Description,
+                    isPrimary = false,
                     onClick = { fileLauncher.launch("*/*") },
-                    colors = ButtonDefaults.buttonColors(containerColor = SurfaceCard, contentColor = TextPrimary),
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(imageVector = Icons.Default.Description, contentDescription = null, tint = NeonCyan)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Select Config from Storage / USB")
-                }
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+                )
             }
         },
         confirmButton = {
-            Button(
+            TvFocusableButton(
+                text = "ADD SERVER",
+                isPrimary = true,
                 onClick = {
                     try {
                         if (inputText.isBlank()) {
-                            errorText = "Please enter a valid configuration"
-                            return@Button
+                            errorText = "Please enter or paste a valid configuration"
+                            return@TvFocusableButton
                         }
                         appState.importFromText(inputText)
                         onDismiss()
@@ -413,10 +614,8 @@ private fun TvAddServerDialog(
                         errorText = e.localizedMessage
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = CyberGreen, contentColor = DarkBackground)
-            ) {
-                Text("Add Server", fontWeight = FontWeight.Bold)
-            }
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+            )
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {

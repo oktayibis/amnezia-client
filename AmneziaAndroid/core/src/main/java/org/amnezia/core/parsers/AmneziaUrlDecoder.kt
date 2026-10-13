@@ -201,15 +201,30 @@ object AmneziaUrlDecoder {
 
         // Read AWG obfuscation params from both containerParams and configDict
         fun getAwgInt(key: String): Int? {
-            return if (configDict.has(key)) configDict.optInt(key)
-            else if (containerParams.has(key)) containerParams.optInt(key)
+            val raw = if (configDict.has(key)) configDict.opt(key)
+            else if (containerParams.has(key)) containerParams.opt(key)
             else null
+
+            if (raw == null) return null
+            if (raw is Number) return raw.toInt()
+            val str = raw.toString().trim()
+            if (str.isEmpty()) return null
+            if (str.contains("-")) {
+                val minStr = str.split("-")[0].trim()
+                return minStr.toIntOrNull()
+            }
+            return str.toIntOrNull()
         }
 
-        fun getAwgLong(key: String): Long? {
-            return if (configDict.has(key)) configDict.optLong(key)
-            else if (containerParams.has(key)) containerParams.optLong(key)
+        // Kept verbatim: H1..H4 may be ranges ("123-456") and I1..I5 are tag strings in AWG 2.0.
+        fun getAwgString(key: String): String? {
+            val raw = if (configDict.has(key)) configDict.opt(key)
+            else if (containerParams.has(key)) containerParams.opt(key)
             else null
+
+            if (raw == null || raw == JSONObject.NULL) return null
+            val str = if (raw is Number) raw.toLong().toString() else raw.toString().trim()
+            return str.ifEmpty { null }
         }
 
         val jc = getAwgInt("Jc") ?: getAwgInt("jc")
@@ -217,10 +232,17 @@ object AmneziaUrlDecoder {
         val jmax = getAwgInt("Jmax") ?: getAwgInt("jmax")
         val s1 = getAwgInt("S1") ?: getAwgInt("s1")
         val s2 = getAwgInt("S2") ?: getAwgInt("s2")
-        val h1 = getAwgLong("H1") ?: getAwgLong("h1")
-        val h2 = getAwgLong("H2") ?: getAwgLong("h2")
-        val h3 = getAwgLong("H3") ?: getAwgLong("h3")
-        val h4 = getAwgLong("H4") ?: getAwgLong("h4")
+        val s3 = getAwgInt("S3") ?: getAwgInt("s3")
+        val s4 = getAwgInt("S4") ?: getAwgInt("s4")
+        val h1 = getAwgString("H1") ?: getAwgString("h1")
+        val h2 = getAwgString("H2") ?: getAwgString("h2")
+        val h3 = getAwgString("H3") ?: getAwgString("h3")
+        val h4 = getAwgString("H4") ?: getAwgString("h4")
+        val i1 = getAwgString("I1") ?: getAwgString("i1")
+        val i2 = getAwgString("I2") ?: getAwgString("i2")
+        val i3 = getAwgString("I3") ?: getAwgString("i3")
+        val i4 = getAwgString("I4") ?: getAwgString("i4")
+        val i5 = getAwgString("I5") ?: getAwgString("i5")
 
         val isAwg = jc != null || jmin != null || jmax != null || s1 != null || s2 != null ||
                 h1 != null || h2 != null || h3 != null || h4 != null
@@ -243,10 +265,17 @@ object AmneziaUrlDecoder {
             jmax = jmax,
             s1 = s1,
             s2 = s2,
+            s3 = s3,
+            s4 = s4,
             h1 = h1,
             h2 = h2,
             h3 = h3,
             h4 = h4,
+            i1 = i1,
+            i2 = i2,
+            i3 = i3,
+            i4 = i4,
+            i5 = i5,
             mtu = mtu
         )
     }
@@ -279,10 +308,17 @@ object AmneziaUrlDecoder {
             profile.jmax?.let { lastConfig.put("Jmax", it) }
             profile.s1?.let { lastConfig.put("S1", it) }
             profile.s2?.let { lastConfig.put("S2", it) }
+            profile.s3?.let { lastConfig.put("S3", it) }
+            profile.s4?.let { lastConfig.put("S4", it) }
             profile.h1?.let { lastConfig.put("H1", it) }
             profile.h2?.let { lastConfig.put("H2", it) }
             profile.h3?.let { lastConfig.put("H3", it) }
             profile.h4?.let { lastConfig.put("H4", it) }
+            profile.i1?.let { lastConfig.put("I1", it) }
+            profile.i2?.let { lastConfig.put("I2", it) }
+            profile.i3?.let { lastConfig.put("I3", it) }
+            profile.i4?.let { lastConfig.put("I4", it) }
+            profile.i5?.let { lastConfig.put("I5", it) }
         }
 
         val protoDict = JSONObject()

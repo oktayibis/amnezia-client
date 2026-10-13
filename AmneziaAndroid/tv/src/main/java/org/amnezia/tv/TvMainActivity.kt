@@ -1,6 +1,7 @@
 package org.amnezia.tv
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -27,7 +28,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -67,6 +71,7 @@ class TvMainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         appState = (application as AmneziaTvApp).appState
+        handleIntent(intent)
 
         setContent {
             AmneziaTvTheme {
@@ -82,6 +87,25 @@ class TvMainActivity : ComponentActivity() {
                     TvAppScaffold(appState = appState)
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        val uri = intent?.data ?: return
+        val urlString = uri.toString()
+        val payload = when {
+            urlString.startsWith("vpn://") -> urlString
+            urlString.startsWith("awgconnect://") -> urlString.removePrefix("awgconnect://")
+            else -> return
+        }
+        try {
+            appState.importFromText(payload)
+        } catch (_: Exception) {
         }
     }
 }
@@ -121,7 +145,7 @@ private fun TvAppScaffold(appState: TvAppState) {
                 .fillMaxWidth()
                 .background(SurfaceCard.copy(alpha = 0.5f))
                 .border(width = 1.dp, color = SurfaceBorder)
-                .padding(horizontal = 48.dp, vertical = 12.dp),
+                .padding(horizontal = 48.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -185,57 +209,88 @@ private fun TvNavTabButton(
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
+    val scale by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (isFocused) 1.08f else 1.0f,
+        animationSpec = androidx.compose.animation.core.tween(150),
+        label = "tabScale"
+    )
+
     val backgroundColor by animateColorAsState(
         targetValue = when {
-            isFocused -> CyberGreen
-            isSelected -> Color(0x33FFFFFF)
+            isFocused && isSelected -> CyberGreen
+            isFocused -> Color(0xFF28364D)
+            isSelected -> Color(0x1FFFFFFF)
             else -> Color.Transparent
         },
+        animationSpec = androidx.compose.animation.core.tween(150),
         label = "tabBg"
     )
 
     val contentColor by animateColorAsState(
         targetValue = when {
-            isFocused -> DarkBackground
+            isFocused && isSelected -> DarkBackground
+            isFocused -> Color.White
             isSelected -> CyberGreen
             else -> TextSecondary
         },
+        animationSpec = androidx.compose.animation.core.tween(150),
         label = "tabContent"
     )
 
-    Row(
+    val borderColor by animateColorAsState(
+        targetValue = when {
+            isFocused -> Color.White
+            isSelected -> CyberGreen.copy(alpha = 0.5f)
+            else -> Color.Transparent
+        },
+        animationSpec = androidx.compose.animation.core.tween(150),
+        label = "tabBorder"
+    )
+
+    Surface(
+        onClick = onClick,
         modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(backgroundColor)
-            .border(
-                width = if (isFocused) 2.dp else if (isSelected) 1.dp else 0.dp,
-                color = if (isFocused) Color.White else if (isSelected) CyberGreen else Color.Transparent,
-                shape = RoundedCornerShape(8.dp)
-            )
-            .onFocusChanged {
-                isFocused = it.isFocused
-                if (it.isFocused) {
-                    onClick()
-                }
-            }
-            .focusable()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .scale(scale)
+            .onFocusChanged { isFocused = it.isFocused },
+        shape = RoundedCornerShape(10.dp),
+        color = backgroundColor,
+        border = BorderStroke(
+            width = if (isFocused) 2.5.dp else if (isSelected) 1.dp else 0.dp,
+            color = borderColor
+        )
     ) {
-        Icon(
-            imageVector = tab.icon,
-            contentDescription = null,
-            tint = contentColor,
-            modifier = Modifier.size(18.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = tab.title,
-            color = contentColor,
-            fontSize = 13.sp,
-            fontWeight = if (isFocused || isSelected) FontWeight.Bold else FontWeight.Medium,
-            letterSpacing = 1.sp
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = tab.icon,
+                    contentDescription = null,
+                    tint = contentColor,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = tab.title,
+                    color = contentColor,
+                    fontSize = 13.sp,
+                    fontWeight = if (isFocused || isSelected) FontWeight.Bold else FontWeight.Medium,
+                    letterSpacing = 1.sp
+                )
+            }
+
+            // Active page indicator bar (visible when this page is currently active)
+            if (isSelected && !isFocused) {
+                Spacer(modifier = Modifier.height(3.dp))
+                Box(
+                    modifier = Modifier
+                        .width(24.dp)
+                        .height(2.5.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(CyberGreen)
+                )
+            }
+        }
     }
 }

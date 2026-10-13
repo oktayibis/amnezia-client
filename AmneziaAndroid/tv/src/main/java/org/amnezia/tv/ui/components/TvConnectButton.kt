@@ -70,8 +70,8 @@ fun TvConnectButton(
     )
 
     val scale by animateFloatAsState(
-        targetValue = if (isFocused) 1.08f else 1.0f,
-        animationSpec = tween(200),
+        targetValue = if (isFocused) 1.10f else 1.0f,
+        animationSpec = tween(150),
         label = "tvBtnScale"
     )
 
@@ -100,10 +100,9 @@ fun TvConnectButton(
     ) {
         Box(
             modifier = Modifier
-                .size(200.dp)
+                .size(165.dp)
                 .scale(scale)
                 .onFocusChanged { isFocused = it.isFocused }
-                .focusable()
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -115,12 +114,12 @@ fun TvConnectButton(
             if (isConnected || isBusy || isFocused) {
                 Box(
                     modifier = Modifier
-                        .size(195.dp)
+                        .size(165.dp)
                         .clip(CircleShape)
                         .background(
                             Brush.radialGradient(
                                 colors = listOf(
-                                    (if (isFocused) CyberGreen else buttonColor).copy(alpha = if (isFocused) 0.5f else pulseAlpha),
+                                    (if (isFocused) CyberGreen else buttonColor).copy(alpha = if (isFocused) 0.6f else pulseAlpha),
                                     Color.Transparent
                                 )
                             )
@@ -131,7 +130,7 @@ fun TvConnectButton(
             // Outer ring
             Box(
                 modifier = Modifier
-                    .size(175.dp)
+                    .size(145.dp)
                     .clip(CircleShape)
                     .border(
                         width = if (isFocused) 3.5.dp else 2.dp,
@@ -143,7 +142,7 @@ fun TvConnectButton(
             // Inner circle
             Box(
                 modifier = Modifier
-                    .size(150.dp)
+                    .size(125.dp)
                     .clip(CircleShape)
                     .background(
                         if (isConnected || isBusy) {
@@ -153,7 +152,7 @@ fun TvConnectButton(
                         } else {
                             Brush.verticalGradient(
                                 listOf(
-                                    if (isFocused) Color(0xFF26334D) else Color(0xFF1B2333),
+                                    if (isFocused) Color(0xFF2E3D58) else Color(0xFF1B2333),
                                     Color(0xFF131A26)
                                 )
                             )
@@ -165,12 +164,12 @@ fun TvConnectButton(
                     imageVector = Icons.Default.PowerSettingsNew,
                     contentDescription = "Toggle Connection",
                     tint = if (isConnected || isBusy) DarkBackground else if (isFocused) CyberGreen else TextSecondary,
-                    modifier = Modifier.size(60.dp)
+                    modifier = Modifier.size(50.dp)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Text(
             text = when {
@@ -178,10 +177,10 @@ fun TvConnectButton(
                 isBusy -> "CONNECTING..."
                 else -> "PRESS [SELECT] TO CONNECT"
             },
-            color = if (isFocused) CyberGreen else TextSecondary,
-            fontSize = 13.sp,
+            color = if (isFocused) Color.White else TextSecondary,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 1.2.sp
+            letterSpacing = 1.sp
         )
     }
 }

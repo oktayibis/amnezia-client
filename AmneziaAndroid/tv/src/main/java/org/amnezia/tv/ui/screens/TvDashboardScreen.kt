@@ -41,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -74,13 +75,14 @@ fun TvDashboardScreen(
     val stats by appState.stats.collectAsStateWithLifecycle()
     val isSimulated by appState.isSimulatedTunnel.collectAsStateWithLifecycle()
     val providesTrafficStats by appState.providesTrafficStats.collectAsStateWithLifecycle()
+    val errorMessage by appState.errorMessage.collectAsStateWithLifecycle()
 
     Row(
         modifier = modifier
             .fillMaxSize()
             .background(DarkBackground)
-            .padding(horizontal = 48.dp, vertical = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(40.dp),
+            .padding(horizontal = 48.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(36.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Left Column: Power Connect Button & Status
@@ -93,16 +95,29 @@ fun TvDashboardScreen(
         ) {
             TvStatusPill(state = connectionState)
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             TvConnectButton(
                 connectionState = connectionState,
                 onClick = { appState.toggleConnection() }
             )
 
-            Spacer(modifier = Modifier.height(18.dp))
+            val errorText = (connectionState as? ConnectionState.Error)?.message ?: errorMessage
+            if (errorText != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = errorText,
+                    color = ErrorRed,
+                    fontSize = 13.sp,
+                    textAlign = TextAlign.Center,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.width(360.dp)
+                )
+            }
 
             if (BuildConfig.DEBUG && isSimulated) {
+                Spacer(modifier = Modifier.height(10.dp))
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
@@ -134,19 +149,19 @@ fun TvDashboardScreen(
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.2.sp,
-                modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+                modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
             )
 
             TvFocusableCard(onClick = onNavigateToServers) { isFocused ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
+                        .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(52.dp)
+                            .size(46.dp)
                             .clip(CircleShape)
                             .background(if (isFocused) CyberGreen.copy(alpha = 0.25f) else Color(0x1AFFFFFF)),
                         contentAlignment = Alignment.Center
@@ -155,22 +170,22 @@ fun TvDashboardScreen(
                             imageVector = Icons.Default.Dns,
                             contentDescription = null,
                             tint = if (isFocused) CyberGreen else TextPrimary,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(14.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = selectedProfile?.name ?: "No Server Selected",
                             color = TextPrimary,
-                            fontSize = 18.sp,
+                            fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(3.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             val badgeColor = when (selectedProfile?.protocol) {
                                 ProtocolType.AMNEZIA_WG -> AwgPurple
@@ -186,15 +201,17 @@ fun TvDashboardScreen(
                                 Text(
                                     text = selectedProfile?.protocol?.displayName ?: "Config Required",
                                     color = badgeColor,
-                                    fontSize = 11.sp,
+                                    fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
-                            Spacer(modifier = Modifier.width(10.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = selectedProfile?.let { "${it.host}:${it.port}" } ?: "Press to add server",
+                                text = selectedProfile?.let { "${it.host}:${it.port}" } ?: "Press to add or paste server",
                                 color = TextSecondary,
-                                fontSize = 13.sp
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
@@ -203,12 +220,12 @@ fun TvDashboardScreen(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                         contentDescription = "Switch Server",
                         tint = if (isFocused) CyberGreen else TextSecondary,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Live network metrics are shown only when the backend reports real byte counters.
             if (providesTrafficStats) {
@@ -218,7 +235,7 @@ fun TvDashboardScreen(
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.2.sp,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
                 )
 
                 TvMetricsCard(stats = stats)

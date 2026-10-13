@@ -5,3 +5,10 @@
 -keep,includedescriptorclasses class org.amnezia.core.**$$serializer { *; }
 -keepclassmembers class org.amnezia.core.** { *** Companion; }
 -keepclasseswithmembers class org.amnezia.core.** { kotlinx.serialization.KSerializer serializer(...); }
+
+# AmneziaWG NDK / JNI keep rules
+-dontwarn javax.annotation.**
+-keep class org.amnezia.awg.** { *; }
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
