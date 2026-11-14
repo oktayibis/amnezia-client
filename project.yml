@@ -6,6 +6,10 @@ options:
     macOS: "14.0"
   xcodeVersion: "15.0"
 
+packages:
+  WireGuardKit:
+    path: Vendor/WireGuardKit
+
 settings:
   base:
     SWIFT_VERSION: "5.9"
@@ -78,6 +82,25 @@ targets:
       - sdk: Vision.framework
       - sdk: PhotosUI.framework
 
+  # Builds libwg-go.a (amneziawg-go) with `make` into BUILT_PRODUCTS_DIR.
+  WireGuardGoBridgeiOS:
+    type: ""
+    platform: iOS
+    legacy:
+      toolPath: /usr/bin/make
+      arguments: $(ACTION)
+      workingDirectory: Vendor/WireGuardKit/Sources/WireGuardKitGo
+      passSettings: true
+
+  WireGuardGoBridgeMac:
+    type: ""
+    platform: macOS
+    legacy:
+      toolPath: /usr/bin/make
+      arguments: $(ACTION)
+      workingDirectory: Vendor/WireGuardKit/Sources/WireGuardKitGo
+      passSettings: true
+
   AmneziaTunnel:
     type: app-extension
     platform: iOS
@@ -104,7 +127,11 @@ targets:
         PRODUCT_NAME: "AmneziaTunnel"
         SKIP_INSTALL: YES
         GENERATE_INFOPLIST_FILE: NO
+        LIBRARY_SEARCH_PATHS: $(inherited) $(BUILT_PRODUCTS_DIR)
     dependencies:
+      - target: WireGuardGoBridgeiOS
+        link: false
+      - package: WireGuardKit
       - target: AmneziaCore
       - sdk: NetworkExtension.framework
 
@@ -202,6 +229,7 @@ targets:
       properties:
         com.apple.security.app-sandbox: true
         com.apple.security.network.client: true
+        com.apple.security.network.server: true
         com.apple.developer.networking.networkextension:
           - packet-tunnel-provider
         com.apple.security.application-groups:
@@ -213,7 +241,11 @@ targets:
         SKIP_INSTALL: YES
         GENERATE_INFOPLIST_FILE: NO
         ENABLE_HARDENED_RUNTIME: YES
+        LIBRARY_SEARCH_PATHS: $(inherited) $(BUILT_PRODUCTS_DIR)
     dependencies:
+      - target: WireGuardGoBridgeMac
+        link: false
+      - package: WireGuardKit
       - target: AmneziaCoreMac
       - sdk: NetworkExtension.framework
 

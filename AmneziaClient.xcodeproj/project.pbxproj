@@ -17,6 +17,7 @@
 		1F2FDBE31F6475030EF54524 /* ConnectionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13C68D263CE05AFA54C8FA7 /* ConnectionState.swift */; };
 		21C8A792F4F05536B8D89D07 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E6191D84A192DAE9717100D /* AppKit.framework */; };
 		2885C501B8531427975F7CBC /* ConnectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F61DEAD57931D8CDE885BF4 /* ConnectButton.swift */; };
+		2A666EFF63FD00D26F6A32D6 /* WireGuardKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3D61AE96D9CB52C6D03935A4 /* WireGuardKit */; };
 		2CCE2D1F5D156BC916E4CC42 /* ServerDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6273263B1E4E1A2B797913D2 /* ServerDetailView.swift */; };
 		2D96DB96269DB4A377DC999E /* AddServerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A3DC91D0C37358BEB600CFA /* AddServerSheet.swift */; };
 		2DD4E500A8134D726746787A /* ConnectionStatusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65ED719C30739DCF5E5EE641 /* ConnectionStatusCard.swift */; };
@@ -65,6 +66,7 @@
 		9B540AED8FCD490A46FEBDEF /* AwgParameters.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6DE8A395E83A2227EA8455 /* AwgParameters.swift */; };
 		A094EBD239A4FFAB4880B199 /* WgQuickConfigParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D3F3A80A1C75520F4352DD8 /* WgQuickConfigParser.swift */; };
 		A6D12B422050A2EB4739BCDD /* ZlibHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADAD3EE92A7DF0B93DFD047B /* ZlibHelperTests.swift */; };
+		A9570A361C9E039859F89C40 /* WireGuardKit in Frameworks */ = {isa = PBXBuildFile; productRef = 174A8C9B9FB0E528D8550ADC /* WireGuardKit */; };
 		B2A63FBDD42FEB1C7807F9DA /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6788D15972FD24CB01FBB79 /* HapticFeedback.swift */; };
 		B4A9A6A8BDD0A9038B564637 /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E3A7A67E7E8A39EFA88E39B /* UniformTypeIdentifiers.framework */; };
 		B982EF5E7FCBEA4B8D3C39C0 /* AmneziaCoreMac.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7D439E7AA879F1F7C3578F20 /* AmneziaCoreMac.framework */; };
@@ -105,6 +107,13 @@
 			remoteGlobalIDString = C985819825B223392667264E;
 			remoteInfo = AmneziaCore;
 		};
+		60F2EFE2EB71D809E870D8FE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E325CC2FB4C2582FA9687A85 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9E5411FA7CE9047240205F0A;
+			remoteInfo = WireGuardGoBridgeiOS;
+		};
 		6B4DABA864015BF1B287753A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E325CC2FB4C2582FA9687A85 /* Project object */;
@@ -125,6 +134,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = EA8BD3CD91C8E25A369AA442;
 			remoteInfo = AmneziaTunnelMac;
+		};
+		9994A6F9EC6993F48528A527 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E325CC2FB4C2582FA9687A85 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D3F9BA8A09255560315E176B;
+			remoteInfo = WireGuardGoBridgeMac;
 		};
 		A6006AD3FD214BBBFAE5AB4D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -210,7 +226,7 @@
 /* Begin PBXFileReference section */
 		00F47ABB0F1912DA5B27E903 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		02045E1AC133101530CDF8C1 /* AmneziaCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AmneziaCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		022C8AD014BF68477209F17F /* AmneziaApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AmneziaApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		022C8AD014BF68477209F17F /* AmneziaApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; name = AmneziaApp.app; path = "AWG Connect.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		035AE0E70FF1A2FA1E2A344F /* ZlibHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZlibHelper.swift; sourceTree = "<group>"; };
 		05315DAAB29D3F5A666B6D67 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		08330B630C75604B931A2B0D /* LiveTrafficStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTrafficStatsView.swift; sourceTree = "<group>"; };
@@ -218,16 +234,17 @@
 		0AD533D32078B1AF42FB1671 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		0F401AF6B2A4B70C6F6E1060 /* AmneziaUrlDecoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmneziaUrlDecoderTests.swift; sourceTree = "<group>"; };
 		148250FE2BBE0E398E5BEF14 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		15B137068ACE618140FE70FF /* AmneziaMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AmneziaMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		15B137068ACE618140FE70FF /* AmneziaMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = AmneziaMac.app; path = "AWG Connect.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1690A39F1D5151B4587475B2 /* AmneziaUrlDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmneziaUrlDecoder.swift; sourceTree = "<group>"; };
 		17A1BB1B94EDAE2CAEFD8C97 /* MacPrivacyNoticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPrivacyNoticeView.swift; sourceTree = "<group>"; };
 		1A3DC91D0C37358BEB600CFA /* AddServerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddServerSheet.swift; sourceTree = "<group>"; };
 		1F61DEAD57931D8CDE885BF4 /* ConnectButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectButton.swift; sourceTree = "<group>"; };
+		2195E5B0A998713A0D988073 /* WireGuardKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WireGuardKit; path = Vendor/WireGuardKit; sourceTree = SOURCE_ROOT; };
 		226DEFEF4763CE7799B7871A /* AmneziaApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AmneziaApp.entitlements; sourceTree = "<group>"; };
 		2D3F3A80A1C75520F4352DD8 /* WgQuickConfigParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WgQuickConfigParser.swift; sourceTree = "<group>"; };
 		39FE61C886F11C0DBCA840BA /* WgQuickConfigParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WgQuickConfigParserTests.swift; sourceTree = "<group>"; };
 		44A3F8333DE205ED1A9C530A /* PrivacyNoticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyNoticeView.swift; sourceTree = "<group>"; };
-		502B1572889A8A9276C1609C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		502B1572889A8A9276C1609C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		51F87BF2C5753D8066BF2774 /* ServerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerProfile.swift; sourceTree = "<group>"; };
 		578EEC863EA62B4BC4778E83 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		580D8080B1F754511E54D95A /* AmneziaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmneziaApp.swift; sourceTree = "<group>"; };
@@ -243,7 +260,7 @@
 		6D419556BB7AE10A90BC650C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6E40D833721188EB9F9E7CBA /* DnsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DnsProvider.swift; sourceTree = "<group>"; };
 		7B7652E1123C130159191656 /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
-		7D439E7AA879F1F7C3578F20 /* AmneziaCoreMac.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AmneziaCoreMac.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7D439E7AA879F1F7C3578F20 /* AmneziaCoreMac.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = AmneziaCoreMac.framework; path = AmneziaCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E3A7A67E7E8A39EFA88E39B /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		883847ED651D0E0117E1EBF0 /* ServerListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerListView.swift; sourceTree = "<group>"; };
 		89456F2EC51D8A783D6BAAAB /* QrCodeChunkAssembler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QrCodeChunkAssembler.swift; sourceTree = "<group>"; };
@@ -256,7 +273,7 @@
 		B156892A980CB1FE53F75532 /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
 		B1BCBBD2E2736BD064D72EF2 /* MacServerListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacServerListView.swift; sourceTree = "<group>"; };
 		C020E0D2D9395F01E04AAB8E /* MacDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDashboardView.swift; sourceTree = "<group>"; };
-		C2C3895C3250EB2353324B41 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		C2C3895C3250EB2353324B41 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		C5E4B687FB54A12900BCDA12 /* ManualUrlInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualUrlInputView.swift; sourceTree = "<group>"; };
 		C7F46521244C725CF451B70B /* MacAppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAppState.swift; sourceTree = "<group>"; };
 		C90E403C517C70B9D0EFB382 /* ServerShareQrView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerShareQrView.swift; sourceTree = "<group>"; };
@@ -274,7 +291,7 @@
 		E7B5E6724D0B669646D35D80 /* AmneziaTunnelMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AmneziaTunnelMac.entitlements; sourceTree = "<group>"; };
 		E95B7F773F00A27536D7AA14 /* AmneziaTunnel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AmneziaTunnel.entitlements; sourceTree = "<group>"; };
 		ED23234609D48DC4F358A197 /* AmneziaMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmneziaMacApp.swift; sourceTree = "<group>"; };
-		EDBDEDF082475B633A1491B5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		EDBDEDF082475B633A1491B5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		EEC17D30CB6877D7CFCED4ED /* NetworkExtensionTunnelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkExtensionTunnelService.swift; sourceTree = "<group>"; };
 		F6742E492CB31D188915E046 /* MacSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSettingsView.swift; sourceTree = "<group>"; };
 		F83C107ECF957D7BD7341B3D /* GlassCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassCard.swift; sourceTree = "<group>"; };
@@ -309,6 +326,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2A666EFF63FD00D26F6A32D6 /* WireGuardKit in Frameworks */,
 				B982EF5E7FCBEA4B8D3C39C0 /* AmneziaCoreMac.framework in Frameworks */,
 				8EFE43A2A7AEA81B08D76225 /* NetworkExtension.framework in Frameworks */,
 			);
@@ -338,6 +356,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A9570A361C9E039859F89C40 /* WireGuardKit in Frameworks */,
 				DAB8A755A321B68CD7E125E6 /* AmneziaCore.framework in Frameworks */,
 				02EC90AEF9ADC432A4D78081 /* NetworkExtension.framework in Frameworks */,
 			);
@@ -524,6 +543,7 @@
 				638FD9FAC2817351D7776E08 /* AmneziaCoreTests */,
 				D221A85D322D957C0301FA41 /* AmneziaMac */,
 				20D4EA6A7F1B261A48C6D4AF /* AmneziaTunnel */,
+				D56F3CDA6CCB20AC35B8E7E2 /* Packages */,
 				BDE25F47132B47D3BE2BE934 /* Frameworks */,
 				F41BC38DE6459457E4BA884F /* Products */,
 			);
@@ -576,6 +596,14 @@
 				F6742E492CB31D188915E046 /* MacSettingsView.swift */,
 			);
 			path = Settings;
+			sourceTree = "<group>";
+		};
+		D56F3CDA6CCB20AC35B8E7E2 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				2195E5B0A998713A0D988073 /* WireGuardKit */,
+			);
+			name = Packages;
 			sourceTree = "<group>";
 		};
 		E56EE37C4606A3C1893CE2EE /* Views */ = {
@@ -637,6 +665,43 @@
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		9E5411FA7CE9047240205F0A /* WireGuardGoBridgeiOS */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION)";
+			buildConfigurationList = 2B7A93FED879A14D87A41BB2 /* Build configuration list for PBXLegacyTarget "WireGuardGoBridgeiOS" */;
+			buildPhases = (
+				D85DADB25F044E197615E1A0 /* Sources */,
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = Vendor/WireGuardKit/Sources/WireGuardKitGo;
+			dependencies = (
+			);
+			name = WireGuardGoBridgeiOS;
+			packageProductDependencies = (
+			);
+			passBuildSettingsInEnvironment = 1;
+			productName = WireGuardGoBridgeiOS;
+		};
+		D3F9BA8A09255560315E176B /* WireGuardGoBridgeMac */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION)";
+			buildConfigurationList = 7B901DF36C2BCF69C44E1704 /* Build configuration list for PBXLegacyTarget "WireGuardGoBridgeMac" */;
+			buildPhases = (
+				F9AE3DA5D7635E76EECC7452 /* Sources */,
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = Vendor/WireGuardKit/Sources/WireGuardKitGo;
+			dependencies = (
+			);
+			name = WireGuardGoBridgeMac;
+			packageProductDependencies = (
+			);
+			passBuildSettingsInEnvironment = 1;
+			productName = WireGuardGoBridgeMac;
+		};
+/* End PBXLegacyTarget section */
 
 /* Begin PBXNativeTarget section */
 		02FCF8CD9A8280D31AB2D168 /* AmneziaCoreMac */ = {
@@ -711,10 +776,12 @@
 			buildRules = (
 			);
 			dependencies = (
+				85B3F16A53022DF5235A84B8 /* PBXTargetDependency */,
 				4DE0D80B727E08DB59DF8BBB /* PBXTargetDependency */,
 			);
 			name = AmneziaTunnel;
 			packageProductDependencies = (
+				174A8C9B9FB0E528D8550ADC /* WireGuardKit */,
 			);
 			productName = AmneziaTunnel;
 			productReference = 5CEB95366709BB8A2A7A9A51 /* AmneziaTunnel.appex */;
@@ -772,10 +839,12 @@
 			buildRules = (
 			);
 			dependencies = (
+				1C894AE3695FCE448FABE878 /* PBXTargetDependency */,
 				5B70072BAB96ADD3CA37C33F /* PBXTargetDependency */,
 			);
 			name = AmneziaTunnelMac;
 			packageProductDependencies = (
+				3D61AE96D9CB52C6D03935A4 /* WireGuardKit */,
 			);
 			productName = AmneziaTunnelMac;
 			productReference = 65E96FA2ECF36A75CE7E343D /* AmneziaTunnelMac.appex */;
@@ -810,7 +879,15 @@
 						DevelopmentTeam = 3SN795A9D6;
 						ProvisioningStyle = Automatic;
 					};
+					9E5411FA7CE9047240205F0A = {
+						DevelopmentTeam = 3SN795A9D6;
+						ProvisioningStyle = Automatic;
+					};
 					C985819825B223392667264E = {
+						DevelopmentTeam = 3SN795A9D6;
+						ProvisioningStyle = Automatic;
+					};
+					D3F9BA8A09255560315E176B = {
 						DevelopmentTeam = 3SN795A9D6;
 						ProvisioningStyle = Automatic;
 					};
@@ -829,6 +906,9 @@
 			);
 			mainGroup = B8F858475C57154C08247740;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				3FBCD5813BCA0826315732FB /* XCLocalSwiftPackageReference "Vendor/WireGuardKit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F41BC38DE6459457E4BA884F /* Products */;
 			projectDirPath = "";
@@ -841,6 +921,8 @@
 				3696A0B100F369CD654E970A /* AmneziaMac */,
 				5239A19AD363A497FFC1BDBB /* AmneziaTunnel */,
 				EA8BD3CD91C8E25A369AA442 /* AmneziaTunnelMac */,
+				D3F9BA8A09255560315E176B /* WireGuardGoBridgeMac */,
+				9E5411FA7CE9047240205F0A /* WireGuardGoBridgeiOS */,
 			);
 		};
 /* End PBXProject section */
@@ -989,6 +1071,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D85DADB25F044E197615E1A0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F9AE3DA5D7635E76EECC7452 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -1001,6 +1097,11 @@
 			isa = PBXTargetDependency;
 			target = C985819825B223392667264E /* AmneziaCore */;
 			targetProxy = E895C3334FB739663C6B3E44 /* PBXContainerItemProxy */;
+		};
+		1C894AE3695FCE448FABE878 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D3F9BA8A09255560315E176B /* WireGuardGoBridgeMac */;
+			targetProxy = 9994A6F9EC6993F48528A527 /* PBXContainerItemProxy */;
 		};
 		4DE0D80B727E08DB59DF8BBB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1016,6 +1117,11 @@
 			isa = PBXTargetDependency;
 			target = EA8BD3CD91C8E25A369AA442 /* AmneziaTunnelMac */;
 			targetProxy = 72705C802C7FB83F4A3B0C7B /* PBXContainerItemProxy */;
+		};
+		85B3F16A53022DF5235A84B8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9E5411FA7CE9047240205F0A /* WireGuardGoBridgeiOS */;
+			targetProxy = 60F2EFE2EB71D809E870D8FE /* PBXContainerItemProxy */;
 		};
 		8DA85CC8AD2C63D045F91BAB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1087,6 +1193,10 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.oktayibis.awgconnect.mac.tunnel;
 				PRODUCT_NAME = AmneziaTunnelMac;
 				SDKROOT = macosx;
@@ -1133,6 +1243,45 @@
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		713C5EDD6E89FEF049F9DE9F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.oktayibis.awgconnect.WireGuardGoBridgeMac;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		8015C7E2A6A18494BE370612 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.oktayibis.awgconnect.WireGuardGoBridgeiOS;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		994EE457368C15F353E23C98 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.oktayibis.awgconnect.WireGuardGoBridgeMac;
+				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -1214,6 +1363,19 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.oktayibis.awgconnect.AmneziaCoreTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A866DB97C7B7745C3680DAE0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.oktayibis.awgconnect.WireGuardGoBridgeiOS;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -1360,6 +1522,10 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.oktayibis.awgconnect.tunnel;
 				PRODUCT_NAME = AmneziaTunnel;
 				SDKROOT = iphoneos;
@@ -1378,6 +1544,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.oktayibis.awgconnect.tunnel;
 				PRODUCT_NAME = AmneziaTunnel;
@@ -1438,6 +1608,10 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.oktayibis.awgconnect.mac.tunnel;
 				PRODUCT_NAME = AmneziaTunnelMac;
 				SDKROOT = macosx;
@@ -1453,6 +1627,24 @@
 			buildConfigurations = (
 				570CA9F4C4CC8A2D020B7593 /* Debug */,
 				D673CFFF07F0AF73324C4BDA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		2B7A93FED879A14D87A41BB2 /* Build configuration list for PBXLegacyTarget "WireGuardGoBridgeiOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A866DB97C7B7745C3680DAE0 /* Debug */,
+				8015C7E2A6A18494BE370612 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7B901DF36C2BCF69C44E1704 /* Build configuration list for PBXLegacyTarget "WireGuardGoBridgeMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				994EE457368C15F353E23C98 /* Debug */,
+				713C5EDD6E89FEF049F9DE9F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -1521,6 +1713,24 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		3FBCD5813BCA0826315732FB /* XCLocalSwiftPackageReference "Vendor/WireGuardKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Vendor/WireGuardKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		174A8C9B9FB0E528D8550ADC /* WireGuardKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WireGuardKit;
+		};
+		3D61AE96D9CB52C6D03935A4 /* WireGuardKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WireGuardKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E325CC2FB4C2582FA9687A85 /* Project object */;
 }
