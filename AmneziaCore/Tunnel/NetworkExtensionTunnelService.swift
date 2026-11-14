@@ -11,6 +11,10 @@ public final class NetworkExtensionTunnelService: TunnelService, @unchecked Send
     private let lock = NSLock()
 
     private var _state: ConnectionState = .disconnected
+    /// Set by `stopTunnel()` so a user-initiated disconnect is not reported as a failure.
+    private var userRequestedStop = false
+    /// True from `startTunnel` until the tunnel connects or the attempt ends.
+    private var startInFlight = false
     private var _stats: ConnectionStatistics = ConnectionStatistics()
 
     public var onStateChange: ((ConnectionState) -> Void)?
@@ -72,8 +76,12 @@ public final class NetworkExtensionTunnelService: TunnelService, @unchecked Send
             throw NSError(domain: "AmneziaTunnel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid tunnel provider session"])
         }
 
+        lock.withLock {
+            self.userRequestedStop = false
+            self.startInFlight = true
+        }
         try session.startVPNTunnel(options: nil)
-        
+
         lock.withLock {
             self._state = .connecting
         }
@@ -87,8 +95,9 @@ public final class NetworkExtensionTunnelService: TunnelService, @unchecked Send
     public func stopTunnel() async throws {
         let mgr = try await getOrCreateManager()
         guard let session = mgr.connection as? NETunnelProviderSession else { return }
+        lock.withLock { self.userRequestedStop = true }
         session.stopVPNTunnel()
-        
+
         lock.withLock {
             self._state = .disconnecting
         }
@@ -132,11 +141,36 @@ public final class NetworkExtensionTunnelService: TunnelService, @unchecked Send
         ) { [weak self] notification in
             guard let self,
                   let connection = notification.object as? NEVPNConnection else { return }
-            self.handleStatusUpdate(connection.status)
+            self.handleStatusUpdate(connection.status, connection: connection)
         }
     }
 
-    private func handleStatusUpdate(_ status: NEVPNStatus) {
+    private func handleStatusUpdate(_ status: NEVPNStatus, connection: NEVPNConnection) {
+        // A drop to .disconnected while we were still connecting, without the user asking,
+        // means the start failed (e.g. no handshake). Surface the extension's reason.
+        let failedStart: Bool = lock.withLock {
+            if status == .connected { startInFlight = false }
+            guard status == .disconnected || status == .invalid, startInFlight else { return false }
+            startInFlight = false
+            return !userRequestedStop
+        }
+        if failedStart {
+            connection.fetchLastDisconnectError { [weak self] error in
+                guard let self else { return }
+                let message = error?.localizedDescription ?? "The connection could not be established."
+                let failed = ConnectionState.error(message)
+                self.lock.withLock {
+                    self._state = failed
+                    self._stats = ConnectionStatistics()
+                }
+                DispatchQueue.main.async {
+                    self.onStateChange?(failed)
+                    self.onStatsChange?(ConnectionStatistics())
+                }
+            }
+            return
+        }
+
         let newState: ConnectionState
         switch status {
         case .invalid, .disconnected:
