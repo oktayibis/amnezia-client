@@ -35,3 +35,8 @@ fastlane/test_output
 
 # Kotlin compiler caches
 .kotlin/
+
+# AmneziaWG Go bridge (built by WireGuardGoBridge* targets)
+Vendor/WireGuardKit/Sources/WireGuardKitGo/out/
+Vendor/WireGuardKit/Sources/WireGuardKitGo/.tmp/
+Vendor/WireGuardKit/.swiftpm/
