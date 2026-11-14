@@ -376,20 +376,24 @@ fun TvServersScreen(
                 )
             },
             confirmButton = {
-                Button(
+                TvFocusableButton(
+                    text = "DELETE",
+                    icon = Icons.Default.Delete,
+                    isPrimary = false,
                     onClick = {
                         appState.deleteProfile(profile)
                         profileToDelete = null
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = ErrorRed, contentColor = TextPrimary)
-                ) {
-                    Text("Delete")
-                }
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                )
             },
             dismissButton = {
-                TextButton(onClick = { profileToDelete = null }) {
-                    Text("Cancel", color = TextSecondary)
-                }
+                TvFocusableButton(
+                    text = "CANCEL",
+                    isPrimary = true,
+                    onClick = { profileToDelete = null },
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                )
             }
         )
     }
@@ -402,8 +406,14 @@ private fun TvServerCardItem(
     onSelect: () -> Unit,
     onDelete: () -> Unit
 ) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
     TvFocusableCard(
         onClick = onSelect,
+        modifier = Modifier.weight(1f),
         defaultBorderColor = if (isSelected) CyberGreen else SurfaceBorder,
         borderWidth = if (isSelected) 1.5.dp else 1.dp
     ) { isFocused ->
@@ -493,19 +503,26 @@ private fun TvServerCardItem(
                     modifier = Modifier.padding(end = 12.dp)
                 )
             }
-
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier.size(34.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    tint = if (isFocused) ErrorRed else TextSecondary.copy(alpha = 0.6f),
-                    modifier = Modifier.size(18.dp)
-                )
-            }
         }
+    }
+
+    // Sibling (not nested) focusable so D-pad RIGHT from the card reaches it
+    TvFocusableCard(
+        onClick = onDelete,
+        defaultBorderColor = ErrorRed.copy(alpha = 0.4f)
+    ) { isFocused ->
+        Box(
+            modifier = Modifier.size(66.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Delete server",
+                tint = if (isFocused) ErrorRed else TextSecondary,
+                modifier = Modifier.size(26.dp)
+            )
+        }
+    }
     }
 }
 
