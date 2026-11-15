@@ -48,7 +48,7 @@ class AwgConfigMapperTest {
         val profile = ServerProfile(
             name = "Test AWG",
             protocolType = ProtocolType.AMNEZIA_WG,
-            host = "94.138.209.154",
+            host = "203.0.113.10",
             port = 34316,
             clientIp = "10.8.0.2/32",
             dnsServers = listOf("1.1.1.1"),

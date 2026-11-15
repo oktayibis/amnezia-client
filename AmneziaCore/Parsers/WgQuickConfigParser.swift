@@ -130,7 +130,7 @@ public final class WgQuickConfigParser: Sendable {
 
         let presharedKey = peerAttrs["presharedkey"]
         let mtu = interfaceAttrs["mtu"].flatMap { UInt16($0) }
-        let persistentKeepalive = peerAttrs["persistentkeepalive"].flatMap { UInt16($0) }
+        let (persistentKeepalive, persistentKeepaliveRange) = parseKeepalive(peerAttrs["persistentkeepalive"])
 
         // Parse AWG Obfuscation parameters
         let awg = AwgParameters(
@@ -149,7 +149,10 @@ public final class WgQuickConfigParser: Sendable {
             i2: interfaceAttrs["i2"],
             i3: interfaceAttrs["i3"],
             i4: interfaceAttrs["i4"],
-            i5: interfaceAttrs["i5"]
+            i5: interfaceAttrs["i5"],
+            awg3: Dictionary(uniqueKeysWithValues: AwgParameters.awg3Keys.compactMap { key in
+                interfaceAttrs[key.lowercased()].map { (key, $0) }
+            })
         )
 
         let protocolType: ProtocolType = awg.hasObfuscation ? .amneziaWg : .wireGuard
@@ -168,6 +171,7 @@ public final class WgQuickConfigParser: Sendable {
             allowedIps: allowedIps,
             mtu: mtu,
             persistentKeepalive: persistentKeepalive,
+            persistentKeepaliveRange: persistentKeepaliveRange,
             awgParameters: awg.hasObfuscation ? awg : nil,
             rawConfig: text
         )
@@ -203,6 +207,7 @@ public final class WgQuickConfigParser: Sendable {
             if let i3 = awg.i3 { output += "I3 = \(i3)\n" }
             if let i4 = awg.i4 { output += "I4 = \(i4)\n" }
             if let i5 = awg.i5 { output += "I5 = \(i5)\n" }
+            for (key, value) in awg.orderedAwg3 { output += "\(key) = \(value)\n" }
         }
 
         output += "\n[Peer]\n"
@@ -212,7 +217,7 @@ public final class WgQuickConfigParser: Sendable {
         }
         output += "Endpoint = \(profile.endpointHost):\(profile.endpointPort)\n"
         output += "AllowedIPs = \(profile.allowedIps.joined(separator: ", "))\n"
-        if let keepalive = profile.persistentKeepalive {
+        if let keepalive = profile.persistentKeepaliveValue {
             output += "PersistentKeepalive = \(keepalive)\n"
         }
 
@@ -220,6 +225,17 @@ public final class WgQuickConfigParser: Sendable {
     }
 
     // MARK: - Helpers
+
+    /// PersistentKeepalive is a number in WireGuard and AWG 2.0, and may be a range ("22-30") in AWG 3.x.
+    static func parseKeepalive(_ raw: String?) -> (UInt16?, String?) {
+        guard let raw = raw?.trimmingCharacters(in: .whitespaces), !raw.isEmpty else { return (nil, nil) }
+        if let value = UInt16(raw) { return (value, nil) }
+        let bounds = raw.split(separator: "-", omittingEmptySubsequences: false).map { $0.trimmingCharacters(in: .whitespaces) }
+        if bounds.count == 2, let low = UInt16(bounds[0]), let high = UInt16(bounds[1]), low <= high {
+            return (nil, "\(low)-\(high)")
+        }
+        return (nil, nil)
+    }
 
     private static func parseEndpoint(_ endpoint: String) throws -> (String, UInt16) {
         // Handle IPv6 bracket notation [2001:db8::1]:51820 or ipv4:port

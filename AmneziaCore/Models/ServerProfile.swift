@@ -37,6 +37,9 @@ public struct ServerProfile: Identifiable, Codable, Equatable, Sendable {
     public var allowedIps: [String]
     public var mtu: UInt16?
     public var persistentKeepalive: UInt16?
+    /// AmneziaWG 3.x allows a randomized keepalive range such as "22-30".
+    /// When set it takes precedence over `persistentKeepalive`.
+    public var persistentKeepaliveRange: String?
     
     // AmneziaWG Obfuscation (if applicable)
     public var awgParameters: AwgParameters?
@@ -62,6 +65,7 @@ public struct ServerProfile: Identifiable, Codable, Equatable, Sendable {
         allowedIps: [String] = ["0.0.0.0/0", "::/0"],
         mtu: UInt16? = nil,
         persistentKeepalive: UInt16? = 25,
+        persistentKeepaliveRange: String? = nil,
         awgParameters: AwgParameters? = nil,
         rawConfig: String? = nil,
         createdAt: Date = Date(),
@@ -82,12 +86,18 @@ public struct ServerProfile: Identifiable, Codable, Equatable, Sendable {
         self.allowedIps = allowedIps
         self.mtu = mtu
         self.persistentKeepalive = persistentKeepalive
+        self.persistentKeepaliveRange = persistentKeepaliveRange
         self.awgParameters = awgParameters
         self.rawConfig = rawConfig
         self.createdAt = createdAt
         self.lastConnectedAt = lastConnectedAt
         self.pingMs = pingMs
         self.countryCode = countryCode
+    }
+
+    /// The PersistentKeepalive value as written in wg-quick: the range if present, else the number.
+    public var persistentKeepaliveValue: String? {
+        persistentKeepaliveRange ?? persistentKeepalive.map(String.init)
     }
 
     /// Full formatted endpoint "host:port"

@@ -3,7 +3,7 @@ module github.com/oktayibis/awgconnect/wireguardkitgo
 go 1.26
 
 require (
-	github.com/amnezia-vpn/amneziawg-go v0.2.19
+	github.com/amnezia-vpn/amneziawg-go/v3 v3.1.20260828
 	golang.org/x/sys v0.47.0
 )
 
