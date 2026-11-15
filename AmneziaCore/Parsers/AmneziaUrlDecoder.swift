@@ -247,10 +247,11 @@ public final class AmneziaUrlDecoder: Sendable {
         }
 
         var keepalive: UInt16?
+        var keepaliveRange: String?
         if let kInt = configDict["persistentKeepAlive"] as? Int ?? configDict["persistent_keep_alive"] as? Int {
             keepalive = UInt16(kInt)
-        } else if let kStr = findString(["persistentKeepAlive", "persistent_keep_alive", "PersistentKeepalive"]), let k = UInt16(kStr) {
-            keepalive = k
+        } else if let kStr = findString(["persistentKeepAlive", "persistent_keep_alive", "PersistentKeepalive"]) {
+            (keepalive, keepaliveRange) = WgQuickConfigParser.parseKeepalive(kStr)
         }
 
         // Parse AWG obfuscation parameters from both container parameters and last_config
@@ -276,6 +277,7 @@ public final class AmneziaUrlDecoder: Sendable {
             allowedIps: allowedIps,
             mtu: mtu,
             persistentKeepalive: keepalive,
+            persistentKeepaliveRange: keepaliveRange,
             awgParameters: awg.hasObfuscation ? awg : nil,
             rawConfig: rawConfig
         )
@@ -296,7 +298,12 @@ public final class AmneziaUrlDecoder: Sendable {
             if let str = dict[key.lowercased()] as? String, !str.trimmingCharacters(in: .whitespaces).isEmpty {
                 return str.trimmingCharacters(in: .whitespaces)
             }
-            if let num = dict[key] as? Int { return "\(num)" }
+            // JSONSerialization hands booleans over as NSNumber, so check for CFBoolean
+            // before Int; otherwise `true` would become "1".
+            if let number = dict[key] as? NSNumber {
+                if CFGetTypeID(number) == CFBooleanGetTypeID() { return number.boolValue ? "true" : "false" }
+                return number.stringValue
+            }
             return nil
         }
 
@@ -316,7 +323,10 @@ public final class AmneziaUrlDecoder: Sendable {
             i2: getString("I2"),
             i3: getString("I3"),
             i4: getString("I4"),
-            i5: getString("I5")
+            i5: getString("I5"),
+            awg3: Dictionary(uniqueKeysWithValues: AwgParameters.awg3Keys.compactMap { key in
+                getString(key).map { (key, $0) }
+            })
         )
     }
 
@@ -332,7 +342,11 @@ public final class AmneziaUrlDecoder: Sendable {
         
         if let psk = profile.presharedKey { lastConfigDict["pskKey"] = psk }
         if let mtu = profile.mtu { lastConfigDict["mtu"] = Int(mtu) }
-        if let keepalive = profile.persistentKeepalive { lastConfigDict["persistentKeepAlive"] = Int(keepalive) }
+        if let range = profile.persistentKeepaliveRange {
+            lastConfigDict["persistentKeepAlive"] = range
+        } else if let keepalive = profile.persistentKeepalive {
+            lastConfigDict["persistentKeepAlive"] = Int(keepalive)
+        }
         
         if let awg = profile.awgParameters {
             for (k, v) in awg.configDictionary {

@@ -32,6 +32,17 @@ public struct AwgParameters: Codable, Equatable, Sendable {
     public var i4: String?
     public var i5: String?
 
+    /// AmneziaWG 3.x interface settings, keyed by their wg-quick name (see `awg3Keys`).
+    /// Kept as strings and passed through unchanged so the engine sees exactly what the server issued.
+    public var awg3: [String: String]?
+
+    /// AmneziaWG 3.x interface keys, in the order the official template writes them.
+    public static let awg3Keys = [
+        "HeaderProtectionKey", "ContentPaddingAddition",
+        "RekeyAfterTime", "RekeyTimeout", "RejectAfterTime", "KeepaliveTimeout",
+        "MaxHandshakeAttempts", "RandomTrailers", "DisableCookies"
+    ]
+
     public init(
         jc: UInt16? = nil,
         jmin: UInt16? = nil,
@@ -48,7 +59,8 @@ public struct AwgParameters: Codable, Equatable, Sendable {
         i2: String? = nil,
         i3: String? = nil,
         i4: String? = nil,
-        i5: String? = nil
+        i5: String? = nil,
+        awg3: [String: String]? = nil
     ) {
         self.jc = jc
         self.jmin = jmin
@@ -66,6 +78,7 @@ public struct AwgParameters: Codable, Equatable, Sendable {
         self.i3 = i3
         self.i4 = i4
         self.i5 = i5
+        self.awg3 = (awg3?.isEmpty ?? true) ? nil : awg3
     }
 
     /// Returns true if at least one AmneziaWG obfuscation parameter is active
@@ -73,7 +86,14 @@ public struct AwgParameters: Codable, Equatable, Sendable {
         jc != nil || jmin != nil || jmax != nil ||
         s1 != nil || s2 != nil || s3 != nil || s4 != nil ||
         h1 != nil || h2 != nil || h3 != nil || h4 != nil ||
-        i1 != nil || i2 != nil || i3 != nil || i4 != nil || i5 != nil
+        i1 != nil || i2 != nil || i3 != nil || i4 != nil || i5 != nil ||
+        awg3 != nil
+    }
+
+    /// AmneziaWG 3.x settings as ordered wg-quick lines' key/value pairs.
+    public var orderedAwg3: [(key: String, value: String)] {
+        guard let awg3 else { return [] }
+        return Self.awg3Keys.compactMap { key in awg3[key].map { (key, $0) } }
     }
 
     /// Converts non-nil parameters to wg-quick configuration key-value dictionary
@@ -95,6 +115,7 @@ public struct AwgParameters: Codable, Equatable, Sendable {
         if let i3 { dict["I3"] = i3 }
         if let i4 { dict["I4"] = i4 }
         if let i5 { dict["I5"] = i5 }
+        for (key, value) in orderedAwg3 { dict[key] = value }
         return dict
     }
 }
