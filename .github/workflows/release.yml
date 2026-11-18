@@ -106,21 +106,119 @@ jobs:
           path: dist-extra/
           if-no-files-found: error
 
-  # iOS / macOS: add a job here once the Apple Developer account is active. It needs a
-  # distribution certificate + provisioning profiles (app and tunnel extension) as secrets,
-  # then `xcodebuild archive` and `-exportArchive` to produce the .ipa / notarized .app.
+  macos:
+    name: macOS (DMG)
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Derive version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [[ ! "$TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Tag '$TAG' is not a version tag like v1.2.3 or v1.2.3-beta.1"
+            exit 1
+          fi
+          # Same scheme as Android: 1.2.3 -> 1002003.
+          echo "name=${TAG#v}" >> "$GITHUB_OUTPUT"
+          echo "code=$(( BASH_REMATCH[1] * 1000000 + BASH_REMATCH[2] * 1000 + BASH_REMATCH[3] ))" >> "$GITHUB_OUTPUT"
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: Vendor/WireGuardKit/Sources/WireGuardKitGo/go.mod
+          cache-dependency-path: Vendor/WireGuardKit/Sources/WireGuardKitGo/go.sum
+
+      - name: Import signing certificate and profiles
+        env:
+          CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          APP_PROFILE_BASE64: ${{ secrets.MACOS_APP_PROFILE_BASE64 }}
+          TUNNEL_PROFILE_BASE64: ${{ secrets.MACOS_TUNNEL_PROFILE_BASE64 }}
+        run: |
+          if [[ -z "$CERTIFICATE_P12_BASE64" || -z "$CERTIFICATE_PASSWORD" || -z "$APP_PROFILE_BASE64" || -z "$TUNNEL_PROFILE_BASE64" ]]; then
+            echo "::error::macOS signing secrets are missing. See docs/RELEASING.md."
+            exit 1
+          fi
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 16)"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          echo "$CERTIFICATE_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          rm "$RUNNER_TEMP/cert.p12"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          IDENTITY="$(security find-identity -v -p codesigning "$KEYCHAIN" | awk 'NR==1 {print $2}')"
+          [[ -n "$IDENTITY" ]] || { echo "::error::No signing identity in MACOS_CERTIFICATE_P12_BASE64"; exit 1; }
+          echo "$APP_PROFILE_BASE64" | base64 --decode > "$RUNNER_TEMP/app.provisionprofile"
+          echo "$TUNNEL_PROFILE_BASE64" | base64 --decode > "$RUNNER_TEMP/tunnel.provisionprofile"
+          {
+            echo "KEYCHAIN=$KEYCHAIN"
+            echo "SIGN_IDENTITY=$IDENTITY"
+            echo "APP_PROFILE=$RUNNER_TEMP/app.provisionprofile"
+            echo "TUNNEL_PROFILE=$RUNNER_TEMP/tunnel.provisionprofile"
+          } >> "$GITHUB_ENV"
+
+      - name: Prepare notarization key
+        env:
+          NOTARY_KEY_BASE64: ${{ secrets.MACOS_NOTARY_KEY_BASE64 }}
+          NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+        run: |
+          # Optional: only a Developer ID build can be notarized.
+          if [[ -n "$NOTARY_KEY_BASE64" && -n "$NOTARY_KEY_ID" && -n "$NOTARY_ISSUER_ID" ]]; then
+            echo "$NOTARY_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/notary.p8"
+            {
+              echo "NOTARY_KEY_PATH=$RUNNER_TEMP/notary.p8"
+              echo "NOTARY_KEY_ID=$NOTARY_KEY_ID"
+              echo "NOTARY_ISSUER_ID=$NOTARY_ISSUER_ID"
+            } >> "$GITHUB_ENV"
+          fi
+
+      - name: Test
+        run: swift test
+
+      - name: Build DMG
+        env:
+          VERSION: ${{ steps.version.outputs.name }}
+          BUILD_NUMBER: ${{ steps.version.outputs.code }}
+          OUTPUT_DIR: ${{ github.workspace }}/dist
+        run: ./scripts/macos-dmg.sh
+
+      - name: Clean up signing material
+        if: always()
+        run: |
+          [[ -n "${KEYCHAIN:-}" ]] && security delete-keychain "$KEYCHAIN" || true
+          rm -f "$RUNNER_TEMP"/*.provisionprofile "$RUNNER_TEMP/notary.p8"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: dist/
+          if-no-files-found: error
+
+  # iOS: add a job once there is a distribution route (App Store / TestFlight). It needs a
+  # distribution certificate + provisioning profiles (app and tunnel extension) as secrets.
 
   publish:
     name: Publish GitHub Release
-    needs: android
+    needs: [android, macos]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: android-installers
+          pattern: "*-installer*"
           path: dist
+          merge-multiple: true
 
       - name: Create release
         env:
