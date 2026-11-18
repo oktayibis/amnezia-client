@@ -60,7 +60,7 @@ android {
         jvmTarget = "17"
     }
     packaging {
-        // okhttp-dnsoverhttps (via amneziawg-android) and jspecify both ship this OSGi manifest.
+        // Some dependencies ship this OSGi manifest.
         resources.excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
     }
     buildFeatures {

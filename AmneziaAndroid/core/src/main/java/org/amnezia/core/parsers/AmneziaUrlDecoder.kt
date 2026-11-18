@@ -244,8 +244,17 @@ object AmneziaUrlDecoder {
         val i4 = getAwgString("I4") ?: getAwgString("i4")
         val i5 = getAwgString("I5") ?: getAwgString("i5")
 
+        // AWG 3.x: the official client uses the wg-quick key names in last_config.
+        val awg3 = ServerProfile.AWG3_KEYS
+            .mapNotNull { key -> getAwgString(key)?.let { key to it } }
+            .toMap()
+            .ifEmpty { null }
+        val keepalive = ServerProfile.parseKeepalive(
+            getAwgString("persistent_keep_alive") ?: getAwgString("PersistentKeepalive")
+        )
+
         val isAwg = jc != null || jmin != null || jmax != null || s1 != null || s2 != null ||
-                h1 != null || h2 != null || h3 != null || h4 != null
+                h1 != null || h2 != null || h3 != null || h4 != null || awg3 != null
         val protocolType = if (isAwg) ProtocolType.AMNEZIA_WG else ProtocolType.WIREGUARD
         val serverName = if (description.isNotEmpty()) description else "Amnezia ($hostName)"
 
@@ -276,6 +285,8 @@ object AmneziaUrlDecoder {
             i3 = i3,
             i4 = i4,
             i5 = i5,
+            awg3 = awg3,
+            persistentKeepalive = keepalive,
             mtu = mtu
         )
     }
@@ -301,6 +312,9 @@ object AmneziaUrlDecoder {
         lastConfig.put("hostName", profile.host)
         lastConfig.put("mtu", profile.mtu)
         profile.presharedKey?.let { lastConfig.put("pskKey", it) }
+        profile.persistentKeepalive?.let { keepalive ->
+            lastConfig.put("persistent_keep_alive", keepalive.toIntOrNull() ?: keepalive)
+        }
 
         if (isAwg) {
             profile.jc?.let { lastConfig.put("Jc", it) }
@@ -319,6 +333,7 @@ object AmneziaUrlDecoder {
             profile.i3?.let { lastConfig.put("I3", it) }
             profile.i4?.let { lastConfig.put("I4", it) }
             profile.i5?.let { lastConfig.put("I5", it) }
+            profile.orderedAwg3.forEach { (key, value) -> lastConfig.put(key, value) }
         }
 
         val protoDict = JSONObject()

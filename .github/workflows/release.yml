@@ -25,6 +25,9 @@ jobs:
         working-directory: AmneziaAndroid
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The AmneziaWG engine is built from Vendor/amneziawg-android and its own submodules.
+          submodules: recursive
 
       - name: Derive version from tag
         id: version

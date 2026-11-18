@@ -19,7 +19,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.amnezia.awg.backend.GoBackend
-import org.amnezia.awg.backend.NoopTunnelActionHandler
 import org.amnezia.awg.backend.Tunnel
 import org.amnezia.core.models.ConnectionState
 import org.amnezia.core.models.ConnectionStats
@@ -37,7 +36,7 @@ class RealTunnelService(
 ) : VpnTunnelService {
 
     private val appContext = context.applicationContext
-    private val backend = GoBackend(appContext, NoopTunnelActionHandler())
+    private val backend = GoBackend(appContext)
     private val tunnel = AwgTunnel("awg0")
     private val notificationHelper = VpnNotificationHelper(appContext)
 
@@ -193,15 +192,11 @@ class RealTunnelService(
     private inner class AwgTunnel(private val name: String) : Tunnel {
         override fun getName(): String = name
 
-        // The backend unboxes these without a null check.
-        override fun isIpv4ResolutionPreferred(): Boolean = true
-        override fun isMetered(): Boolean = false
-
         override fun onStateChange(newState: Tunnel.State) {
             Log.d(TAG, "Tunnel state changed to: $newState")
             when (newState) {
                 // Connected is set by startTunnel once a handshake is confirmed.
-                Tunnel.State.UP -> Unit
+                Tunnel.State.UP, Tunnel.State.TOGGLE -> Unit
                 Tunnel.State.DOWN -> {
                     if (_state.value != ConnectionState.Disconnected) {
                         _state.value = ConnectionState.Disconnected

@@ -59,6 +59,20 @@ Herkese açık dağıtım için **Developer ID** gerekir. Ancak macOS'ta app ext
 
 > **Keystore'u kaybetmeyin.** GitHub'dan APK kuran kullanıcılar güncellemeleri ancak aynı anahtarla imzalanmış APK ile alabilir. Keystore dosyasını ve şifreleri bir parola yöneticisinde yedekleyin. Google Play'de Play App Signing kullanıldığında bu anahtar "upload key" olur ve kaybolursa Play Console'dan sıfırlanabilir; GitHub dağıtımı için böyle bir kurtarma yolu yoktur.
 
+## Android'i Mac'te derlemek
+
+AmneziaWG motoru `Vendor/amneziawg-android` submodule'ünden derlenir (resmi `amnezia-vpn/amneziawg-android`, native kısmı NDK + Go). Linux CI'da ek bir şey gerekmez. Mac'te:
+
+```sh
+git submodule update --init --recursive
+brew install flock
+export ANDROID_HOME=$HOME/Library/Android/sdk   # included build kendi local.properties'ini arar
+cd AmneziaAndroid && ./gradlew :mobile:assembleDebug
+```
+
+- NDK `26.1.10909125` gerekir; Gradle kendisi indirir. İndirme takılırsa `android-ndk-r26b-darwin.zip`'i dl.google.com'dan indirip `$ANDROID_HOME/ndk/26.1.10909125` olarak açın.
+- Kütüphanenin Makefile'ı Go 1.24.2'yi indirip `sha256sum -c` ile doğrular. Bu sözdizimi macOS'un `sha256sum`'ında çalışmaz. İlk derleme bu yüzden durursa, `~/.gradle/caches/golang/go1.24.2.darwin-arm64.tar.gz.tmp` dosyasını Makefile'daki hash ile `shasum -a 256 -c` kullanarak doğrulayın ve `.tmp` uzantısını kaldırın. Bu adım bir kez gerekir.
+
 ## Sonraki adımlar
 
 - **iOS:** Dağıtım yolu (App Store / TestFlight) netleşince workflow'a bir job eklenecek.
