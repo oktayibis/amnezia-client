@@ -36,6 +36,10 @@ data class ServerProfile(
     var i3: String? = null,
     var i4: String? = null,
     var i5: String? = null,
+    // AWG 3.x interface settings, keyed by their wg-quick names (see AWG3_KEYS), kept verbatim.
+    var awg3: Map<String, String>? = null,
+    // A number ("25") or, since AWG 3.x, a range ("22-30"). Null means the default of 25 seconds.
+    var persistentKeepalive: String? = null,
     var mtu: Int = 1280,
     var pingMs: Long? = null,
     var flagEmoji: String = "🌐",
@@ -46,4 +50,42 @@ data class ServerProfile(
 
     val protocol: ProtocolType
         get() = protocolType
+
+    /** AWG 3.x settings in the order of the official config template. */
+    val orderedAwg3: List<Pair<String, String>>
+        get() = AWG3_KEYS.mapNotNull { key -> awg3?.get(key)?.let { key to it } }
+
+    val persistentKeepaliveValue: String
+        get() = persistentKeepalive ?: DEFAULT_PERSISTENT_KEEPALIVE
+
+    companion object {
+        /** AWG 3.x interface keys, in the order of the official config template. */
+        val AWG3_KEYS = listOf(
+            "HeaderProtectionKey",
+            "ContentPaddingAddition",
+            "RekeyAfterTime",
+            "RekeyTimeout",
+            "RejectAfterTime",
+            "KeepaliveTimeout",
+            "MaxHandshakeAttempts",
+            "RandomTrailers",
+            "DisableCookies",
+        )
+
+        const val DEFAULT_PERSISTENT_KEEPALIVE = "25"
+
+        /**
+         * Normalises a PersistentKeepalive value: "25" stays "25", " 22 - 30 " becomes "22-30".
+         * Anything else (including a reversed range) is null.
+         */
+        fun parseKeepalive(raw: String?): String? {
+            val value = raw?.trim().orEmpty()
+            value.toIntOrNull()?.let { return if (it in 0..65535) it.toString() else null }
+            val parts = value.split("-").map { it.trim().toIntOrNull() }
+            if (parts.size != 2) return null
+            val (low, high) = parts
+            if (low == null || high == null || low < 0 || high > 65535 || low > high) return null
+            return "$low-$high"
+        }
+    }
 }

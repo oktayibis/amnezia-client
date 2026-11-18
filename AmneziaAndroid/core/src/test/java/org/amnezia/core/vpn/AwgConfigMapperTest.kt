@@ -40,7 +40,7 @@ class AwgConfigMapperTest {
         assertEquals(1, config.peers.size)
         val peer = config.peers[0]
         assertEquals("192.168.1.1:51820", peer.endpoint.orElse(null)?.toString())
-        assertEquals(25, peer.persistentKeepalive.orElse(0))
+        assertEquals("25", peer.persistentKeepalive.orElse(null))
     }
 
     @Test
@@ -110,5 +110,36 @@ class AwgConfigMapperTest {
         assertEquals("2128748706-2129059843", iface.transportPacketMagicHeader.orElse(null))
         assertEquals("<r 2><b 0x8580>", iface.specialJunkI1.orElse(null))
         assertTrue(!iface.specialJunkI2.isPresent)
+    }
+
+    @Test
+    fun mapsAmneziaWg3SettingsAndKeepaliveRange() {
+        val profile = ServerProfile(
+            protocolType = ProtocolType.AMNEZIA_WG,
+            host = "198.51.100.25",
+            privateKey = testPrivateKey,
+            publicKey = testPublicKey,
+            jc = 4,
+            awg3 = mapOf(
+                "HeaderProtectionKey" to testPublicKey,
+                "ContentPaddingAddition" to "0-64",
+                "RekeyAfterTime" to "120",
+                "MaxHandshakeAttempts" to "18",
+                "RandomTrailers" to "true",
+                "DisableCookies" to "false",
+            ),
+            persistentKeepalive = "22-30"
+        )
+
+        val config = profile.toAwgConfig()
+        val iface = config.`interface`
+        assertEquals(testPublicKey, iface.headerProtectionKey.orElse(null)?.toBase64())
+        assertEquals("0-64", iface.contentPaddingAddition.orElse(null))
+        assertEquals("120", iface.rekeyAfterTime.orElse(null))
+        assertEquals("18", iface.maxHandshakeAttempts.orElse(null))
+        assertEquals("true", iface.randomTrailers.orElse(null))
+        assertEquals("false", iface.disableCookies.orElse(null))
+        assertTrue(!iface.rekeyTimeout.isPresent)
+        assertEquals("22-30", config.peers[0].persistentKeepalive.orElse(null))
     }
 }

@@ -63,6 +63,8 @@ object AwgConfigMapper {
             profile.i3?.takeIf { it.isNotBlank() }?.let { ifaceBuilder.parseSpecialJunkI3(it.trim()) }
             profile.i4?.takeIf { it.isNotBlank() }?.let { ifaceBuilder.parseSpecialJunkI4(it.trim()) }
             profile.i5?.takeIf { it.isNotBlank() }?.let { ifaceBuilder.parseSpecialJunkI5(it.trim()) }
+            // AWG 3.x
+            profile.orderedAwg3.forEach { (key, value) -> applyAwg3(ifaceBuilder, key, value) }
         }
 
         val iface = ifaceBuilder.build()
@@ -85,7 +87,7 @@ object AwgConfigMapper {
         }
         peerBuilder.parseAllowedIPs(allowedIps)
 
-        peerBuilder.setPersistentKeepalive(25)
+        peerBuilder.setPersistentKeepalive(profile.persistentKeepaliveValue)
 
         profile.presharedKey?.takeIf { it.isNotBlank() }?.let { psk ->
             peerBuilder.parsePreSharedKey(psk.trim())
@@ -97,6 +99,20 @@ object AwgConfigMapper {
             .setInterface(iface)
             .addPeer(peer)
             .build()
+    }
+
+    private fun applyAwg3(builder: Interface.Builder, key: String, value: String) {
+        when (key) {
+            "HeaderProtectionKey" -> builder.parseHeaderProtectionKey(value)
+            "ContentPaddingAddition" -> builder.parseContentPaddingAddition(value)
+            "RekeyAfterTime" -> builder.parseRekeyAfterTime(value)
+            "RekeyTimeout" -> builder.parseRekeyTimeout(value)
+            "RejectAfterTime" -> builder.parseRejectAfterTime(value)
+            "KeepaliveTimeout" -> builder.parseKeepaliveTimeout(value)
+            "MaxHandshakeAttempts" -> builder.parseMaxHandshakeAttempts(value)
+            "RandomTrailers" -> builder.parseRandomTrailers(value)
+            "DisableCookies" -> builder.parseDisableCookies(value)
+        }
     }
 }
 

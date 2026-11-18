@@ -89,4 +89,44 @@ class AmneziaUrlDecoderTest {
         assertEquals(listOf("8.8.8.8"), profile.dnsServers)
     }
 
+    @Test
+    fun testDecodeAwg3JsonAndEncodeRoundtrip() {
+        // last_config as written by the official client: wg-quick key names, JSON numbers and booleans.
+        val lastConfig = org.json.JSONObject()
+            .put("client_priv_key", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=")
+            .put("server_pub_key", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=")
+            .put("client_ip", "10.8.1.10")
+            .put("hostName", "203.0.113.10")
+            .put("port", 34316)
+            .put("Jc", "4")
+            .put("H1", "1351553658-1920902942")
+            .put("HeaderProtectionKey", "ddddddddddddddddddddddddddddddddddddddddddd=")
+            .put("ContentPaddingAddition", "0-64")
+            .put("MaxHandshakeAttempts", 18)
+            .put("RandomTrailers", true)
+            .put("DisableCookies", false)
+            .put("persistent_keep_alive", "22-30")
+        val root = org.json.JSONObject()
+            .put("description", "AWG 3")
+            .put("defaultContainer", "amnezia-awg")
+            .put("containers", org.json.JSONArray().put(
+                org.json.JSONObject()
+                    .put("container", "amnezia-awg")
+                    .put("awg", org.json.JSONObject().put("last_config", lastConfig.toString()))
+            ))
+
+        val profile = AmneziaUrlDecoder.decode(root.toString())
+        val awg3 = profile.awg3!!
+        assertEquals("ddddddddddddddddddddddddddddddddddddddddddd=", awg3["HeaderProtectionKey"])
+        assertEquals("0-64", awg3["ContentPaddingAddition"])
+        assertEquals("18", awg3["MaxHandshakeAttempts"])
+        assertEquals("true", awg3["RandomTrailers"])
+        assertEquals("false", awg3["DisableCookies"])
+        assertEquals("22-30", profile.persistentKeepalive)
+
+        // Sharing the profile again (vpn:// export) keeps them too.
+        val reimported = AmneziaUrlDecoder.decode(AmneziaUrlDecoder.encodeToUrl(profile))
+        assertEquals(awg3, reimported.awg3)
+        assertEquals("22-30", reimported.persistentKeepalive)
+    }
 }

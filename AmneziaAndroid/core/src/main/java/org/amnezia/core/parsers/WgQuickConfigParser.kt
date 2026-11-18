@@ -81,8 +81,13 @@ object WgQuickConfigParser {
         val h3 = text("h3")
         val h4 = text("h4")
 
+        val awg3 = ServerProfile.AWG3_KEYS
+            .mapNotNull { key -> text(key.lowercase())?.let { key to it } }
+            .toMap()
+            .ifEmpty { null }
+
         val isAwg = jc != null || jmin != null || jmax != null || s1 != null || s2 != null ||
-                h1 != null || h2 != null || h3 != null || h4 != null
+                h1 != null || h2 != null || h3 != null || h4 != null || awg3 != null
         val protocolType = if (isAwg) ProtocolType.AMNEZIA_WG else ProtocolType.WIREGUARD
         val name = profileName ?: "WireGuard ($host)"
 
@@ -113,6 +118,8 @@ object WgQuickConfigParser {
             i3 = text("i3"),
             i4 = text("i4"),
             i5 = text("i5"),
+            awg3 = awg3,
+            persistentKeepalive = ServerProfile.parseKeepalive(peerAttrs["persistentkeepalive"]),
             mtu = mtu
         )
     }
@@ -164,6 +171,7 @@ object WgQuickConfigParser {
         profile.i3?.let { sb.appendLine("I3 = $it") }
         profile.i4?.let { sb.appendLine("I4 = $it") }
         profile.i5?.let { sb.appendLine("I5 = $it") }
+        profile.orderedAwg3.forEach { (key, value) -> sb.appendLine("$key = $value") }
 
         sb.appendLine()
         sb.appendLine("[Peer]")
@@ -171,7 +179,7 @@ object WgQuickConfigParser {
         profile.presharedKey?.let { sb.appendLine("PresharedKey = $it") }
         sb.appendLine("Endpoint = ${profile.host}:${profile.port}")
         sb.appendLine("AllowedIPs = ${profile.allowedIps.joinToString(", ")}")
-        sb.appendLine("PersistentKeepalive = 25")
+        sb.appendLine("PersistentKeepalive = ${profile.persistentKeepaliveValue}")
         return sb.toString()
     }
 }
