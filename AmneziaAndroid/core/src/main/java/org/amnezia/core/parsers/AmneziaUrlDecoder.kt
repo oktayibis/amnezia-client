@@ -150,7 +150,11 @@ object AmneziaUrlDecoder {
                 if (json != null) {
                     json
                 } else if (lastConfigObj.contains("[Interface]") && lastConfigObj.contains("[Peer]")) {
-                    return WgQuickConfigParser.parse(lastConfigObj)
+                    val parsed = WgQuickConfigParser.parse(lastConfigObj, description.ifEmpty { null })
+                    return parsed.copy(
+                        host = parsed.host.ifEmpty { rootHost.ifEmpty { "127.0.0.1" } },
+                        dnsServers = if (dnsList.isNotEmpty()) dnsList else parsed.dnsServers
+                    )
                 } else {
                     throw IllegalArgumentException("Malformed last_config string")
                 }
@@ -174,38 +178,13 @@ object AmneziaUrlDecoder {
         val serverPubKey = findString("serverPubKey", "server_pub_key", "server_public_key", "PublicKey")
             ?: throw IllegalArgumentException("Missing server public key")
 
-        var hostName = findString("hostName", "host_name", "server_ip", "serverIp", "Endpoint")
-            ?: rootHost.ifEmpty { "127.0.0.1" }
-        var port = 51820
-
-        if (configDict.has("port")) {
-            port = configDict.optInt("port", 51820)
-        } else if (configDict.has("server_port")) {
-            port = configDict.optInt("server_port", 51820)
-        }
-
-        if (hostName.contains(":") && !hostName.contains("[")) {
-            val parts = hostName.split(":")
-            if (parts.size == 2) {
-                hostName = parts[0]
-                parts[1].toIntOrNull()?.let { port = it }
-            }
-        }
-
-        val rawIp = findString("clientIp", "client_ip", "Address") ?: "10.0.0.2/32"
-        val clientIp = if (!rawIp.contains("/")) {
-            if (rawIp.contains(":")) "$rawIp/128" else "$rawIp/32"
-        } else rawIp
-        val psk = findString("pskKey", "psk_key", "preshared_key", "PresharedKey")
-        val mtu = configDict.optInt("mtu", 1280)
-
         // Read AWG obfuscation params from both containerParams and configDict
         fun getAwgInt(key: String): Int? {
             val raw = if (configDict.has(key)) configDict.opt(key)
             else if (containerParams.has(key)) containerParams.opt(key)
             else null
 
-            if (raw == null) return null
+            if (raw == null || raw == JSONObject.NULL) return null
             if (raw is Number) return raw.toInt()
             val str = raw.toString().trim()
             if (str.isEmpty()) return null
@@ -223,8 +202,49 @@ object AmneziaUrlDecoder {
             else null
 
             if (raw == null || raw == JSONObject.NULL) return null
-            val str = if (raw is Number) raw.toLong().toString() else raw.toString().trim()
+            val str = when (raw) {
+                is Int, is Long, is Short, is Byte -> raw.toLong().toString()
+                is Number -> {
+                    val d = raw.toDouble()
+                    if (d == d.toLong().toDouble()) d.toLong().toString() else raw.toString()
+                }
+                else -> raw.toString().trim()
+            }
             return str.ifEmpty { null }
+        }
+
+        var hostName = findString("hostName", "host_name", "server_ip", "serverIp", "Endpoint")
+            ?: rootHost.ifEmpty { "127.0.0.1" }
+        var port = getAwgInt("port") ?: getAwgInt("server_port") ?: 51820
+
+        if (hostName.contains(":") && !hostName.contains("[")) {
+            val parts = hostName.split(":")
+            if (parts.size == 2) {
+                hostName = parts[0]
+                parts[1].toIntOrNull()?.let { port = it }
+            }
+        }
+
+        val rawIp = findString("clientIp", "client_ip", "Address") ?: "10.0.0.2/32"
+        val clientIp = if (!rawIp.contains("/")) {
+            if (rawIp.contains(":")) "$rawIp/128" else "$rawIp/32"
+        } else rawIp
+        val psk = findString("pskKey", "psk_key", "preshared_key", "PresharedKey")
+        val mtu = getAwgInt("mtu") ?: getAwgInt("MTU") ?: 1280
+
+        val allowedIps: List<String> = run {
+            val rawAllowed = listOf("allowed_ips", "allowedIps", "AllowedIPs")
+                .firstNotNullOfOrNull { key ->
+                    if (configDict.has(key)) configDict.opt(key)
+                    else if (containerParams.has(key)) containerParams.opt(key)
+                    else null
+                }
+            when (rawAllowed) {
+                is JSONArray -> (0 until rawAllowed.length())
+                    .mapNotNull { i -> rawAllowed.optString(i, "").trim().ifEmpty { null } }
+                is String -> rawAllowed.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                else -> emptyList()
+            }.ifEmpty { listOf("0.0.0.0/0", "::/0") }
         }
 
         val jc = getAwgInt("Jc") ?: getAwgInt("jc")
@@ -268,7 +288,7 @@ object AmneziaUrlDecoder {
             publicKey = serverPubKey,
             privateKey = clientPrivKey,
             presharedKey = psk,
-            allowedIps = listOf("0.0.0.0/0", "::/0"),
+            allowedIps = allowedIps,
             jc = jc,
             jmin = jmin,
             jmax = jmax,
@@ -301,7 +321,22 @@ object AmneziaUrlDecoder {
         }
 
         val isAwg = profile.protocolType == ProtocolType.AMNEZIA_WG
-        val containerName = if (isAwg) "amnezia-awg" else "amnezia-wireguard"
+        val isAwg2Or3 = isAwg && (
+            profile.awg3 != null ||
+                profile.s3 != null ||
+                profile.s4 != null ||
+                profile.i1 != null ||
+                profile.i2 != null ||
+                profile.i3 != null ||
+                profile.i4 != null ||
+                profile.i5 != null ||
+                listOfNotNull(profile.h1, profile.h2, profile.h3, profile.h4).any { it.contains("-") }
+            )
+        val containerName = when {
+            !isAwg -> "amnezia-wireguard"
+            isAwg2Or3 -> "amnezia-awg2"
+            else -> "amnezia-awg"
+        }
         root.put("defaultContainer", containerName)
 
         val lastConfig = JSONObject()
@@ -311,6 +346,11 @@ object AmneziaUrlDecoder {
         lastConfig.put("port", profile.port)
         lastConfig.put("hostName", profile.host)
         lastConfig.put("mtu", profile.mtu)
+        if (profile.allowedIps.isNotEmpty()) {
+            val allowedArray = JSONArray()
+            profile.allowedIps.forEach { allowedArray.put(it) }
+            lastConfig.put("allowed_ips", allowedArray)
+        }
         profile.presharedKey?.let { lastConfig.put("pskKey", it) }
         profile.persistentKeepalive?.let { keepalive ->
             lastConfig.put("persistent_keep_alive", keepalive.toIntOrNull() ?: keepalive)
@@ -337,6 +377,11 @@ object AmneziaUrlDecoder {
         }
 
         val protoDict = JSONObject()
+        if (profile.awg3 != null) {
+            protoDict.put("protocol_version", "3.1")
+        } else if (isAwg2Or3) {
+            protoDict.put("protocol_version", "2")
+        }
         protoDict.put("last_config", lastConfig)
 
         val containerObj = JSONObject()

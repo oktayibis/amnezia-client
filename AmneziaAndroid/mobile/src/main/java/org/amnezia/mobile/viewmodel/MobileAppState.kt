@@ -205,6 +205,7 @@ class MobileAppState(
             trimmed.startsWith("{") -> AmneziaUrlDecoder.decode(trimmed)
             else -> AmneziaUrlDecoder.decode("vpn://$trimmed")
         }
+        profile.rawConfig = trimmed
         addProfile(profile)
         return profile
     }

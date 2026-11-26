@@ -43,6 +43,8 @@ open class PacketTunnelProvider: NEPacketTunnelProvider {
     }()
 
     open override func startTunnel(options: [String: NSObject]?, completionHandler: @escaping (Error?) -> Void) {
+        handshakeQueue.sync { isStopping = false }
+
         guard let conf = (protocolConfiguration as? NETunnelProviderProtocol)?.providerConfiguration,
               let configString = conf["config"] as? String else {
             completionHandler(PacketTunnelProviderError.savedProtocolConfigurationIsInvalid.nsError)

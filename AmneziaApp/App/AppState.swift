@@ -157,6 +157,8 @@ public final class AppState: ObservableObject {
             Task {
                 do {
                     let options = currentTunnelOptions()
+                    try await tunnelService.stopTunnel()
+                    try await Task.sleep(nanoseconds: 500_000_000)
                     try await tunnelService.startTunnel(with: profile, options: options)
                 } catch {
                     handleTunnelError(error)
@@ -235,7 +237,8 @@ public final class AppState: ObservableObject {
         let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
         let profile: ServerProfile
 
-        if trimmed.lowercased().hasPrefix("vpn://") {
+        let lower = trimmed.lowercased()
+        if lower.hasPrefix("vpn://") || lower.hasPrefix("awgconnect://") || lower.hasPrefix("amnezia://") {
             profile = try AmneziaUrlDecoder.decode(trimmed)
         } else if trimmed.contains("[Interface]") && trimmed.contains("[Peer]") {
             profile = try WgQuickConfigParser.parse(trimmed)

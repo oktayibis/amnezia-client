@@ -115,6 +115,6 @@ class ProfileStorage(context: Context) {
         private const val KEY_PROFILES = "amnezia_server_profiles"
         private const val KEY_SELECTED_ID = "amnezia_selected_profile_id"
         private const val KEY_SCHEMA_VERSION = "amnezia_profiles_schema_version"
-        private const val SCHEMA_VERSION = 2
+        private const val SCHEMA_VERSION = 3
     }
 }

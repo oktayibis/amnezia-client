@@ -76,7 +76,7 @@ public struct ServerDetailView: View {
                         if let mtu = profile.mtu {
                             detailRow(title: "MTU", value: "\(mtu)")
                         }
-                        if let keepalive = profile.persistentKeepalive {
+                        if let keepalive = profile.persistentKeepaliveValue {
                             detailRow(title: "Persistent Keepalive", value: "\(keepalive)s")
                         }
                     }
@@ -126,6 +126,14 @@ public struct ServerDetailView: View {
                             if let h2 = awg.h2 { detailRow(title: "Response Magic Header (H2)", value: h2) }
                             if let h3 = awg.h3 { detailRow(title: "Underload Magic Header (H3)", value: h3) }
                             if let h4 = awg.h4 { detailRow(title: "Transport Magic Header (H4)", value: h4) }
+                            if let i1 = awg.i1 { detailRow(title: "Signature Packet (I1)", value: i1) }
+                            if let i2 = awg.i2 { detailRow(title: "Signature Packet (I2)", value: i2) }
+                            if let i3 = awg.i3 { detailRow(title: "Signature Packet (I3)", value: i3) }
+                            if let i4 = awg.i4 { detailRow(title: "Signature Packet (I4)", value: i4) }
+                            if let i5 = awg.i5 { detailRow(title: "Signature Packet (I5)", value: i5) }
+                            ForEach(awg.orderedAwg3, id: \.key) { item in
+                                detailRow(title: item.key, value: item.value, canCopy: item.key == "HeaderProtectionKey")
+                            }
                         }
                         .listRowBackground(Color(white: 0.12))
                     }

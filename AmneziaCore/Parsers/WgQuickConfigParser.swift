@@ -112,10 +112,14 @@ public final class WgQuickConfigParser: Sendable {
             addresses = ["10.8.0.2/32"]
         }
 
-        // Parse DNS
+        // Parse DNS (ignore unexpanded Amnezia template placeholders like $PRIMARY_DNS / $SECONDARY_DNS)
         let dnsList: [String]
         if let dns = interfaceAttrs["dns"] {
-            dnsList = dns.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+            let parsedDns = dns
+                .components(separatedBy: ",")
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+                .filter { !$0.isEmpty && !$0.hasPrefix("$") }
+            dnsList = parsedDns.isEmpty ? ["1.1.1.1", "1.0.0.1"] : parsedDns
         } else {
             dnsList = ["1.1.1.1", "1.0.0.1"]
         }

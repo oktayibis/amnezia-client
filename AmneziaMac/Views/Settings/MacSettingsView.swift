@@ -6,7 +6,7 @@ public struct MacSettingsView: View {
     @AppStorage("amnezia_mac_kill_switch") private var isKillSwitchEnabled: Bool = false
     @AppStorage("amnezia_mac_connect_on_launch") private var isConnectOnLaunch: Bool = false
     @AppStorage("amnezia_mac_dns_provider") private var selectedDns: String = DnsProvider.serverDefault.rawValue
-    @State private var customDnsIp: String = ""
+    @AppStorage("amnezia_mac_custom_dns") private var customDnsIp: String = ""
 
     public init(appState: MacAppState) {
         self.appState = appState

@@ -39,12 +39,58 @@ public final class NetworkExtensionTunnelService: TunnelService, @unchecked Send
     }
 
     public func startTunnel(with profile: ServerProfile, options: TunnelOptions) async throws {
-        let mgr = try await getOrCreateManager()
-        
+        var mgr = try await getOrCreateManager()
+        try await configureAndSaveManager(mgr, with: profile, options: options)
+        // Reload from preferences so NEVPNManager's underlying configuration is fresh on iOS.
+        mgr = try await reloadManager(fallback: mgr)
+
+        guard let session = mgr.connection as? NETunnelProviderSession else {
+            throw NSError(domain: "AmneziaTunnel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid tunnel provider session"])
+        }
+
+        lock.withLock {
+            self.userRequestedStop = false
+            self.startInFlight = true
+        }
+        do {
+            try session.startVPNTunnel(options: nil)
+        } catch let error as NSError where Self.isConfigurationStaleError(error) {
+            // If iOS still reports NEVPNErrorConfigurationStale (e.g. after system VPN settings changed
+            // or initial permission dialog), force a fresh load + save + reload cycle and retry once.
+            self.manager = nil
+            mgr = try await getOrCreateManager()
+            try await configureAndSaveManager(mgr, with: profile, options: options)
+            mgr = try await reloadManager(fallback: mgr)
+            guard let refreshedSession = mgr.connection as? NETunnelProviderSession else {
+                lock.withLock { self.startInFlight = false }
+                throw NSError(domain: "AmneziaTunnel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid tunnel provider session"])
+            }
+            do {
+                try refreshedSession.startVPNTunnel(options: nil)
+            } catch {
+                lock.withLock { self.startInFlight = false }
+                throw error
+            }
+        } catch {
+            lock.withLock { self.startInFlight = false }
+            throw error
+        }
+
+        lock.withLock {
+            self._state = .connecting
+        }
+        onStateChange?(.connecting)
+    }
+
+    private func configureAndSaveManager(
+        _ mgr: NETunnelProviderManager,
+        with profile: ServerProfile,
+        options: TunnelOptions
+    ) async throws {
         let protocolConfiguration = NETunnelProviderProtocol()
         protocolConfiguration.providerBundleIdentifier = tunnelBundleId
         protocolConfiguration.serverAddress = profile.endpointString
-        
+
         // Pass the serialized wg/awg config to providerConfiguration
         let serializedConfig = WgQuickConfigParser.serialize(profile)
         var providerConfig: [String: Any] = [
@@ -70,22 +116,13 @@ public final class NetworkExtensionTunnelService: TunnelService, @unchecked Send
         mgr.isEnabled = true
 
         try await mgr.saveToPreferences()
-        try await mgr.loadFromPreferences()
+    }
 
-        guard let session = mgr.connection as? NETunnelProviderSession else {
-            throw NSError(domain: "AmneziaTunnel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid tunnel provider session"])
+    static func isConfigurationStaleError(_ error: NSError) -> Bool {
+        if error.domain == NEVPNErrorDomain && error.code == NEVPNError.configurationStale.rawValue {
+            return true
         }
-
-        lock.withLock {
-            self.userRequestedStop = false
-            self.startInFlight = true
-        }
-        try session.startVPNTunnel(options: nil)
-
-        lock.withLock {
-            self._state = .connecting
-        }
-        onStateChange?(.connecting)
+        return error.localizedDescription.localizedCaseInsensitiveContains("configuration is stale")
     }
 
     public func startTunnel(with profile: ServerProfile) async throws {
@@ -116,21 +153,44 @@ public final class NetworkExtensionTunnelService: TunnelService, @unchecked Send
     // MARK: - Manager Setup
 
     private func getOrCreateManager() async throws -> NETunnelProviderManager {
-        if let existing = manager {
-            return existing
-        }
-
         let managers = try await NETunnelProviderManager.loadAllFromPreferences()
-        if let found = managers.first(where: {
+        let matching = managers.filter {
             ($0.protocolConfiguration as? NETunnelProviderProtocol)?.providerBundleIdentifier == tunnelBundleId
-        }) {
+        }
+        if let found = matching.first {
+            // Clean up any duplicate managers that could cause stale preference conflicts on iOS
+            if matching.count > 1 {
+                for duplicate in matching.dropFirst() {
+                    try? await duplicate.removeFromPreferences()
+                }
+            }
+            try await found.loadFromPreferences()
             self.manager = found
             return found
+        }
+
+        if let existing = manager {
+            try await existing.loadFromPreferences()
+            return existing
         }
 
         let newManager = NETunnelProviderManager()
         self.manager = newManager
         return newManager
+    }
+
+    private func reloadManager(fallback: NETunnelProviderManager) async throws -> NETunnelProviderManager {
+        try await fallback.loadFromPreferences()
+        let managers = try await NETunnelProviderManager.loadAllFromPreferences()
+        if let found = managers.first(where: {
+            ($0.protocolConfiguration as? NETunnelProviderProtocol)?.providerBundleIdentifier == tunnelBundleId
+        }) {
+            try await found.loadFromPreferences()
+            self.manager = found
+            return found
+        }
+        self.manager = fallback
+        return fallback
     }
 
     private func setupStatusObserver() {
