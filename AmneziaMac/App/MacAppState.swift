@@ -123,6 +123,8 @@ public final class MacAppState: ObservableObject {
             Task {
                 do {
                     let options = currentTunnelOptions()
+                    try await tunnelService.stopTunnel()
+                    try await Task.sleep(nanoseconds: 500_000_000)
                     try await tunnelService.startTunnel(with: profile, options: options)
                 } catch {
                     handleTunnelError(error)
@@ -196,43 +198,43 @@ public final class MacAppState: ObservableObject {
 
     public func importFromText(_ text: String) throws -> ServerProfile {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.hasPrefix("vpn://") || trimmed.hasPrefix("amnezia://") {
-            let profile = try AmneziaUrlDecoder.decode(trimmed)
-            addProfile(profile)
-            return profile
-        } else if trimmed.contains("[Interface]") {
-            let profile = try WgQuickConfigParser.parse(trimmed, profileName: "Imported Config")
-            addProfile(profile)
-            return profile
+        let profile: ServerProfile
+
+        if trimmed.lowercased().hasPrefix("vpn://") || trimmed.lowercased().hasPrefix("amnezia://") {
+            let normalized = trimmed.lowercased().hasPrefix("amnezia://")
+                ? "vpn://" + String(trimmed.dropFirst("amnezia://".count))
+                : trimmed
+            profile = try AmneziaUrlDecoder.decode(normalized)
+        } else if trimmed.contains("[Interface]") && trimmed.contains("[Peer]") {
+            profile = try WgQuickConfigParser.parse(trimmed, profileName: "Imported Config")
+        } else if trimmed.hasPrefix("{") {
+            profile = try AmneziaUrlDecoder.decode(trimmed)
         } else {
-            throw NSError(
-                domain: "AmneziaMac",
-                code: 1,
-                userInfo: [NSLocalizedDescriptionKey: "Unrecognized format. Please provide a vpn:// link or WireGuard/AmneziaWG config."]
-            )
+            profile = try AmneziaUrlDecoder.decode("vpn://\(trimmed)")
         }
+
+        addProfile(profile)
+        return profile
     }
 
     public func importFromFile(url: URL) throws -> ServerProfile {
-        let content = try String(contentsOf: url, encoding: .utf8)
+        let data = try Data(contentsOf: url)
         let profileName = url.deletingPathExtension().lastPathComponent
-        let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        if trimmed.hasPrefix("vpn://") || trimmed.hasPrefix("amnezia://") {
-            let profile = try AmneziaUrlDecoder.decode(trimmed)
-            addProfile(profile)
-            return profile
-        } else if trimmed.contains("[Interface]") {
-            let profile = try WgQuickConfigParser.parse(trimmed, profileName: profileName)
-            addProfile(profile)
-            return profile
-        } else {
-            throw NSError(
-                domain: "AmneziaMac",
-                code: 2,
-                userInfo: [NSLocalizedDescriptionKey: "File does not contain valid vpn:// data or [Interface] section."]
-            )
+        if let content = String(data: data, encoding: .utf8) {
+            let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.contains("[Interface]") && !trimmed.lowercased().hasPrefix("vpn://") && !trimmed.hasPrefix("{") {
+                let profile = try WgQuickConfigParser.parse(trimmed, profileName: profileName)
+                addProfile(profile)
+                return profile
+            }
+            return try importFromText(trimmed)
         }
+        if let decompressed = try? ZlibHelper.decompressQt(data),
+           let decompressedStr = String(data: decompressed, encoding: .utf8) {
+            return try importFromText(decompressedStr)
+        }
+        throw AmneziaDecoderError.base64DecodingFailed
     }
 
     // MARK: - User-triggered Clipboard Handler

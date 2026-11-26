@@ -29,18 +29,24 @@ public final class AmneziaUrlDecoder: Sendable {
     public static func decode(_ input: String) throws -> ServerProfile {
         let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // Strip vpn:// prefix if present
+        // Strip vpn:// or awgconnect:// / amnezia:// prefix if present
         var payload = trimmed
-        if payload.lowercased().hasPrefix("vpn://") {
-            payload = String(payload.dropFirst(6))
-            // Clean up any smart dashes or internal whitespace from iOS pasteboard/texteditor
-            payload = payload
-                .replacingOccurrences(of: "\u{2013}", with: "-") // En-dash
-                .replacingOccurrences(of: "\u{2014}", with: "-") // Em-dash
-                .replacingOccurrences(of: " ", with: "")
-                .replacingOccurrences(of: "\t", with: "")
-                .replacingOccurrences(of: "\r", with: "")
-                .replacingOccurrences(of: "\n", with: "")
+        for prefix in ["vpn://", "awgconnect://", "amnezia://"] {
+            if payload.lowercased().hasPrefix(prefix) {
+                payload = String(payload.dropFirst(prefix.count))
+                if payload.lowercased().hasPrefix("vpn://") {
+                    payload = String(payload.dropFirst(6))
+                }
+                // Clean up any smart dashes or internal whitespace from iOS pasteboard/texteditor
+                payload = payload
+                    .replacingOccurrences(of: "\u{2013}", with: "-") // En-dash
+                    .replacingOccurrences(of: "\u{2014}", with: "-") // Em-dash
+                    .replacingOccurrences(of: " ", with: "")
+                    .replacingOccurrences(of: "\t", with: "")
+                    .replacingOccurrences(of: "\r", with: "")
+                    .replacingOccurrences(of: "\n", with: "")
+                break
+            }
         }
         
         // Try decoding as Base64URL
@@ -188,7 +194,11 @@ public final class AmneziaUrlDecoder: Sendable {
         // If configDict has a full wg-quick "config" string and keys are missing, we can also extract from it
         if let embeddedConfig = configDict["config"] as? String,
            (findString(["clientPrivKey", "client_priv_key"]) == nil || findString(["serverPubKey", "server_pub_key"]) == nil),
-           let parsed = try? WgQuickConfigParser.parse(embeddedConfig) {
+           var parsed = try? WgQuickConfigParser.parse(embeddedConfig, profileName: description) {
+            if !dnsList.isEmpty {
+                parsed.dnsServers = dnsList
+            }
+            parsed.rawConfig = rawConfig
             return parsed
         }
 
@@ -357,14 +367,25 @@ public final class AmneziaUrlDecoder: Sendable {
         let lastConfigJsonData = (try? JSONSerialization.data(withJSONObject: lastConfigDict, options: [])) ?? Data()
         let lastConfigJsonString = String(data: lastConfigJsonData, encoding: .utf8) ?? "{}"
         
-        let containerName = (profile.protocolType == .amneziaWg) ? "amnezia-awg" : "amnezia-wireguard"
+        let isAwg3 = !(profile.awgParameters?.awg3?.isEmpty ?? true) || profile.persistentKeepaliveRange != nil
+        let containerName: String
+        if profile.protocolType == .amneziaWg {
+            containerName = isAwg3 ? "amnezia-awg2" : "amnezia-awg"
+        } else {
+            containerName = "amnezia-wireguard"
+        }
         let protocolKey = (profile.protocolType == .amneziaWg) ? "awg" : "wireguard"
-        
+
+        var protoContainerDict: [String: Any] = [
+            "last_config": lastConfigJsonString
+        ]
+        if isAwg3 {
+            protoContainerDict["protocol_version"] = "3.1"
+        }
+
         let container: [String: Any] = [
             "container": containerName,
-            protocolKey: [
-                "last_config": lastConfigJsonString
-            ]
+            protocolKey: protoContainerDict
         ]
         
         var root: [String: Any] = [

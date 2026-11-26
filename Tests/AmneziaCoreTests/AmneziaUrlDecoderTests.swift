@@ -132,4 +132,155 @@ final class AmneziaUrlDecoderTests: XCTestCase {
         XCTAssertEqual(reimported.persistentKeepaliveRange, "22-30")
     }
 
+    /// Full Amnezia 3.1 `amnezia-awg2` container format with empty I1..I5, "on" strings,
+    /// range values (KeepaliveTimeout, MaxHandshakeAttempts, RekeyAfterTime, RekeyTimeout, RejectAfterTime,
+    /// PersistentKeepalive), and embedded config template with $PRIMARY_DNS / $SECONDARY_DNS.
+    func testDecodeAmneziaAwg2Container31Format() throws {
+        let embeddedWgConfig = """
+        [Interface]
+        Address = 10.8.1.5/32
+        DNS = $PRIMARY_DNS, $SECONDARY_DNS
+        PrivateKey = aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=
+        Jc = 5
+        Jmin = 10
+        Jmax = 50
+        S1 = 12
+        S2 = 12
+        S3 = 12
+        S4 = 12
+        H1 = 1
+        H2 = 2
+        H3 = 3
+        H4 = 4
+        HeaderProtectionKey = ddddddddddddddddddddddddddddddddddddddddddd=
+        RekeyAfterTime = 100-120
+        RekeyTimeout = 3-7
+        RejectAfterTime = 150-180
+        KeepaliveTimeout = 5-15
+        MaxHandshakeAttempts = 15-20
+        RandomTrailers = on
+        DisableCookies = on
+
+        [Peer]
+        PublicKey = bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb=
+        PresharedKey = ccccccccccccccccccccccccccccccccccccccccccc=
+        AllowedIPs = 0.0.0.0/0, ::/0
+        Endpoint = 198.51.100.10:49691
+        PersistentKeepalive = 25-35
+        """
+
+        let lastConfig: [String: Any] = [
+            "DisableCookies": "on",
+            "H1": "1",
+            "H2": "2",
+            "H3": "3",
+            "H4": "4",
+            "HeaderProtectionKey": "ddddddddddddddddddddddddddddddddddddddddddd=",
+            "Jc": "5",
+            "Jmax": "50",
+            "Jmin": "10",
+            "KeepaliveTimeout": "5-15",
+            "MaxHandshakeAttempts": "15-20",
+            "RandomTrailers": "on",
+            "RejectAfterTime": "150-180",
+            "RekeyAfterTime": "100-120",
+            "RekeyTimeout": "3-7",
+            "S1": "12",
+            "S2": "12",
+            "S3": "12",
+            "S4": "12",
+            "allowed_ips": ["0.0.0.0/0", "::/0"],
+            "client_ip": "10.8.1.5",
+            "client_priv_key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=",
+            "config": embeddedWgConfig,
+            "hostName": "198.51.100.10",
+            "mtu": "1376",
+            "persistent_keep_alive": "25-35",
+            "port": 49691,
+            "psk_key": "cccccccccccccccccccccccccccccccccccccccccc=",
+            "server_pub_key": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb="
+        ]
+        let lastConfigString = String(data: try JSONSerialization.data(withJSONObject: lastConfig), encoding: .utf8)!
+        let awgContainerDict: [String: Any] = [
+            "DisableCookies": "on",
+            "H1": "1", "H2": "2", "H3": "3", "H4": "4",
+            "HeaderProtectionKey": "ddddddddddddddddddddddddddddddddddddddddddd=",
+            "I1": "", "I2": "", "I3": "", "I4": "", "I5": "",
+            "Jc": "5", "Jmax": "50", "Jmin": "10",
+            "KeepaliveTimeout": "5-15",
+            "MaxHandshakeAttempts": "15-20",
+            "RandomTrailers": "on",
+            "RejectAfterTime": "150-180",
+            "RekeyAfterTime": "100-120",
+            "RekeyTimeout": "3-7",
+            "S1": "12", "S2": "12", "S3": "12", "S4": "12",
+            "last_config": lastConfigString,
+            "port": "49691",
+            "protocol_version": "3.1",
+            "subnet_address": "10.8.1.0",
+            "transport_proto": "udp"
+        ]
+        let root: [String: Any] = [
+            "containers": [["awg": awgContainerDict, "container": "amnezia-awg2"]],
+            "defaultContainer": "amnezia-awg2",
+            "description": "Server 1",
+            "dns1": "1.1.1.1",
+            "dns2": "1.0.0.1",
+            "format_version": 1,
+            "hostName": "198.51.100.10"
+        ]
+        let rootData = try JSONSerialization.data(withJSONObject: root)
+        let compressed = try ZlibHelper.compressQt(rootData)
+        let vpnUrl = "vpn://\(AmneziaUrlDecoder.encodeBase64URL(compressed))"
+
+        let profile = try AmneziaUrlDecoder.decode(vpnUrl)
+        XCTAssertEqual(profile.name, "Server 1")
+        XCTAssertEqual(profile.protocolType, .amneziaWg)
+        XCTAssertEqual(profile.endpointHost, "198.51.100.10")
+        XCTAssertEqual(profile.endpointPort, 49691)
+        XCTAssertEqual(profile.clientAddresses, ["10.8.1.5/32"])
+        XCTAssertEqual(profile.dnsServers, ["1.1.1.1", "1.0.0.1"])
+        XCTAssertEqual(profile.mtu, 1376)
+        XCTAssertEqual(profile.persistentKeepaliveRange, "25-35")
+        XCTAssertEqual(profile.persistentKeepaliveValue, "25-35")
+
+        let awg = try XCTUnwrap(profile.awgParameters)
+        XCTAssertEqual(awg.jc, 5)
+        XCTAssertEqual(awg.jmin, 10)
+        XCTAssertEqual(awg.jmax, 50)
+        XCTAssertEqual(awg.s1, 12)
+        XCTAssertEqual(awg.s2, 12)
+        XCTAssertEqual(awg.s3, 12)
+        XCTAssertEqual(awg.s4, 12)
+        XCTAssertEqual(awg.h1, "1")
+        XCTAssertEqual(awg.h2, "2")
+        XCTAssertEqual(awg.h3, "3")
+        XCTAssertEqual(awg.h4, "4")
+        XCTAssertNil(awg.i1)
+        XCTAssertNil(awg.i2)
+        XCTAssertNil(awg.i3)
+        XCTAssertNil(awg.i4)
+        XCTAssertNil(awg.i5)
+        XCTAssertEqual(awg.awg3?["HeaderProtectionKey"], "ddddddddddddddddddddddddddddddddddddddddddd=")
+        XCTAssertEqual(awg.awg3?["RekeyAfterTime"], "100-120")
+        XCTAssertEqual(awg.awg3?["RekeyTimeout"], "3-7")
+        XCTAssertEqual(awg.awg3?["RejectAfterTime"], "150-180")
+        XCTAssertEqual(awg.awg3?["KeepaliveTimeout"], "5-15")
+        XCTAssertEqual(awg.awg3?["MaxHandshakeAttempts"], "15-20")
+        XCTAssertEqual(awg.awg3?["RandomTrailers"], "on")
+        XCTAssertEqual(awg.awg3?["DisableCookies"], "on")
+
+        // Verify wg-quick embedded template with $PRIMARY_DNS / $SECONDARY_DNS also parses cleanly
+        let parsedTemplate = try WgQuickConfigParser.parse(embeddedWgConfig, profileName: "Template Test")
+        XCTAssertEqual(parsedTemplate.dnsServers, ["1.1.1.1", "1.0.0.1"])
+        XCTAssertEqual(parsedTemplate.persistentKeepaliveRange, "25-35")
+        XCTAssertEqual(parsedTemplate.awgParameters?.awg3?["DisableCookies"], "on")
+
+        #if canImport(NetworkExtension)
+        XCTAssertTrue(NetworkExtensionTunnelService.isConfigurationStaleError(
+            NSError(domain: "NEVPNErrorDomain", code: 2, userInfo: [NSLocalizedDescriptionKey: "configuration is stale"])
+        ))
+        #endif
+    }
+
 }

@@ -142,4 +142,52 @@ class AwgConfigMapperTest {
         assertTrue(!iface.rekeyTimeout.isPresent)
         assertEquals("22-30", config.peers[0].persistentKeepalive.orElse(null))
     }
+
+    @Test
+    fun mapsAmneziaWg31OnOffAndTimerRangesToUapiCorrectly() {
+        val profile = ServerProfile(
+            protocolType = ProtocolType.AMNEZIA_WG,
+            host = "94.138.209.154",
+            port = 49691,
+            clientIp = "10.8.1.5/32",
+            privateKey = testPrivateKey,
+            publicKey = testPublicKey,
+            presharedKey = "9ovb6UNG06KlYy3j7vKLeCoCdCGKJ6GgHxDjlkvryng=",
+            jc = 5,
+            jmin = 10,
+            jmax = 50,
+            s1 = 12,
+            s2 = 12,
+            s3 = 12,
+            s4 = 12,
+            h1 = "1",
+            h2 = "2",
+            h3 = "3",
+            h4 = "4",
+            awg3 = mapOf(
+                "HeaderProtectionKey" to "x2f0gx6tPJDppc9cqzaRQpLpKaUXevMRwnnheLGu8Yk=",
+                "RekeyAfterTime" to "100-120",
+                "RekeyTimeout" to "3-7",
+                "RejectAfterTime" to "150-180",
+                "KeepaliveTimeout" to "5-15",
+                "MaxHandshakeAttempts" to "15-20",
+                "RandomTrailers" to "on",
+                "DisableCookies" to "on"
+            ),
+            persistentKeepalive = "25-35",
+            mtu = 1376
+        )
+
+        val config = profile.toAwgConfig()
+        val uapi = config.toAwgUserspaceString()
+        assertTrue(uapi.contains("header_protection_key=c767f4831ead3c90e9a5cf5cab36914292e929a5177af311c279e178b1aef189\n"))
+        assertTrue(uapi.contains("rekey_after_time=100-120\n"))
+        assertTrue(uapi.contains("rekey_timeout=3-7\n"))
+        assertTrue(uapi.contains("reject_after_time=150-180\n"))
+        assertTrue(uapi.contains("keepalive_timeout=5-15\n"))
+        assertTrue(uapi.contains("max_handshake_attempts=15-20\n"))
+        assertTrue(uapi.contains("random_trailers=1\n"))
+        assertTrue(uapi.contains("disable_cookies=1\n"))
+        assertTrue(uapi.contains("persistent_keepalive_interval=25-35\n"))
+    }
 }

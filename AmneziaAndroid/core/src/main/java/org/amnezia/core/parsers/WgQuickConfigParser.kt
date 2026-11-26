@@ -58,7 +58,9 @@ object WgQuickConfigParser {
 
         val addresses = interfaceAttrs["address"]?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }
             ?: listOf("10.0.0.2/32")
-        val dnsList = interfaceAttrs["dns"]?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }
+        val dnsList = interfaceAttrs["dns"]?.split(",")?.map { it.trim() }
+            ?.filter { it.isNotEmpty() && !it.startsWith("$") }
+            ?.ifEmpty { null }
             ?: listOf("1.1.1.1", "1.0.0.1")
         val allowedIps = peerAttrs["allowedips"]?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }
             ?: listOf("0.0.0.0/0", "::/0")
