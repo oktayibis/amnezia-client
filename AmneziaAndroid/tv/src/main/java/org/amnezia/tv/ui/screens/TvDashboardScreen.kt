@@ -11,6 +11,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -28,12 +29,27 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.NetworkCheck
+import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
+import org.amnezia.core.vpn.NetworkDiagnosticsTool
+import org.amnezia.tv.ui.components.TvFocusableButton
+import org.amnezia.tv.ui.theme.SurfaceBorder
+import org.amnezia.tv.ui.theme.SurfaceDark
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -229,16 +245,54 @@ fun TvDashboardScreen(
 
             // Live network metrics are shown only when the backend reports real byte counters.
             if (providesTrafficStats) {
-                Text(
-                    text = "NETWORK METRICS",
-                    color = TextSecondary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+                var showDiagnosticsDialog by remember { mutableStateOf(false) }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 4.dp, bottom = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "NETWORK METRICS",
+                        color = TextSecondary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.2.sp
+                    )
+                    Text(
+                        text = "PRESS [OK] ON METRICS FOR SPEEDTEST & TOOLS",
+                        color = CyberGreen,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                TvMetricsCard(
+                    stats = stats,
+                    onClick = { showDiagnosticsDialog = true }
                 )
 
-                TvMetricsCard(stats = stats)
+                Spacer(modifier = Modifier.height(10.dp))
+
+                TvFocusableButton(
+                    text = "SPEEDTEST & NETWORK TOOLS",
+                    icon = Icons.Default.Speed,
+                    isPrimary = false,
+                    onClick = { showDiagnosticsDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+                )
+
+                if (showDiagnosticsDialog) {
+                    TvDiagnosticsDialog(
+                        appState = appState,
+                        stats = stats,
+                        profile = selectedProfile,
+                        onDismiss = { showDiagnosticsDialog = false }
+                    )
+                }
             }
         }
     }
@@ -293,44 +347,289 @@ private fun TvStatusPill(state: ConnectionState) {
 }
 
 @Composable
-private fun TvMetricsCard(stats: ConnectionStats) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(SurfaceCard)
-            .border(1.dp, Color(0x1AFFFFFF), RoundedCornerShape(16.dp))
-            .padding(18.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+private fun TvMetricsCard(
+    stats: ConnectionStats,
+    onClick: () -> Unit = {}
+) {
+    TvFocusableCard(onClick = onClick) { _ ->
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp, vertical = 14.dp)
         ) {
-            TvMetricItem(
-                icon = Icons.Default.NetworkCheck,
-                label = "PING",
-                value = stats.latencyMs?.let { "${it}ms" } ?: "--",
-                color = CyberGreen
-            )
-            TvMetricItem(
-                icon = Icons.Default.ArrowDownward,
-                label = "DOWNLOAD",
-                value = stats.formattedDownloadSpeed,
-                color = CyberGreen
-            )
-            TvMetricItem(
-                icon = Icons.Default.ArrowUpward,
-                label = "UPLOAD",
-                value = stats.formattedUploadSpeed,
-                color = NeonCyan
-            )
-            TvMetricItem(
-                icon = Icons.Default.Timer,
-                label = "DURATION",
-                value = stats.formattedDuration,
-                color = TextSecondary
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                TvMetricItem(
+                    icon = Icons.Default.NetworkCheck,
+                    label = "PING",
+                    value = stats.latencyMs?.let { "${it}ms" } ?: "--",
+                    color = CyberGreen
+                )
+                TvMetricItem(
+                    icon = Icons.Default.ArrowDownward,
+                    label = "DOWNLOAD",
+                    value = stats.formattedDownloadSpeed,
+                    color = CyberGreen
+                )
+                TvMetricItem(
+                    icon = Icons.Default.ArrowUpward,
+                    label = "UPLOAD",
+                    value = stats.formattedUploadSpeed,
+                    color = NeonCyan
+                )
+                TvMetricItem(
+                    icon = Icons.Default.Timer,
+                    label = "DURATION",
+                    value = stats.formattedDuration,
+                    color = TextSecondary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(color = Color(0x1AFFFFFF), thickness = 1.dp)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                TvSubMetricItem(
+                    label = "JITTER",
+                    value = stats.jitterMs?.let { "${it}ms" } ?: "--"
+                )
+                TvSubMetricItem(
+                    label = "TOTAL DOWN",
+                    value = stats.formattedBytesIn
+                )
+                TvSubMetricItem(
+                    label = "TOTAL UP",
+                    value = stats.formattedBytesOut
+                )
+                TvSubMetricItem(
+                    label = "HANDSHAKE",
+                    value = stats.formattedHandshakeAge
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TvSubMetricItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = label, color = TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.SemiBold)
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(text = value, color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+    }
+}
+
+@Composable
+private fun TvDiagnosticsDialog(
+    appState: TvAppState,
+    stats: ConnectionStats,
+    profile: ServerProfile?,
+    onDismiss: () -> Unit
+) {
+    val scope = rememberCoroutineScope()
+    var snapshot by remember { mutableStateOf<NetworkDiagnosticsTool.DiagnosticsSnapshot?>(null) }
+    var isDiagnosing by remember { mutableStateOf(false) }
+    var isSpeedtesting by remember { mutableStateOf(false) }
+    var speedtestPhase by remember { mutableStateOf<String?>(null) }
+    var liveDownMbps by remember { mutableStateOf<Double?>(null) }
+    var liveUpMbps by remember { mutableStateOf<Double?>(null) }
+    var speedtestResult by remember { mutableStateOf<NetworkDiagnosticsTool.SpeedtestResult?>(null) }
+
+    fun triggerDiagnostics() {
+        if (isDiagnosing) return
+        isDiagnosing = true
+        scope.launch {
+            try {
+                snapshot = NetworkDiagnosticsTool.runDiagnostics(
+                    profile = profile,
+                    dnsOverride = appState.settings.resolveDnsOverride()
+                )
+            } finally {
+                isDiagnosing = false
+            }
+        }
+    }
+
+    fun triggerSpeedtest() {
+        if (isSpeedtesting) return
+        isSpeedtesting = true
+        speedtestResult = null
+        liveDownMbps = null
+        liveUpMbps = null
+        scope.launch {
+            try {
+                val res = NetworkDiagnosticsTool.runSpeedtest(
+                    profile = profile,
+                    dnsOverride = appState.settings.resolveDnsOverride()
+                ) { phase, down, up ->
+                    speedtestPhase = phase
+                    if (down != null) liveDownMbps = down
+                    if (up != null) liveUpMbps = up
+                }
+                speedtestResult = res
+                snapshot = NetworkDiagnosticsTool.DiagnosticsSnapshot(
+                    publicIp = res.publicIp ?: snapshot?.publicIp,
+                    country = res.country ?: snapshot?.country,
+                    colo = res.colo ?: snapshot?.colo,
+                    pingMs = res.pingMs ?: snapshot?.pingMs,
+                    jitterMs = res.jitterMs ?: snapshot?.jitterMs,
+                    packetLossPercent = res.packetLossPercent,
+                    dnsLatencyMs = res.dnsLatencyMs ?: snapshot?.dnsLatencyMs
+                )
+            } finally {
+                isSpeedtesting = false
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        triggerDiagnostics()
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
+        modifier = Modifier.width(720.dp),
+        containerColor = SurfaceDark,
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(imageVector = Icons.Default.Speed, contentDescription = null, tint = CyberGreen, modifier = Modifier.size(22.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("SPEEDTEST & CONNECTION DIAGNOSTICS", color = TextPrimary, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                }
+                if (isDiagnosing || isSpeedtesting) {
+                    Text(
+                        text = speedtestPhase ?: "Probing tunnel...",
+                        color = ConnectingOrange,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                // Speedtest Result / Live Gauges Box
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(SurfaceCard)
+                        .border(1.dp, SurfaceBorder, RoundedCornerShape(12.dp))
+                        .padding(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        val downVal = speedtestResult?.downloadMbps ?: liveDownMbps
+                        val upVal = speedtestResult?.uploadMbps ?: liveUpMbps
+                        val pingVal = speedtestResult?.pingMs ?: snapshot?.pingMs ?: stats.latencyMs
+                        val jitterVal = speedtestResult?.jitterMs ?: snapshot?.jitterMs ?: stats.jitterMs
+                        val lossVal = speedtestResult?.packetLossPercent ?: snapshot?.packetLossPercent ?: 0
+
+                        TvMetricItem(
+                            icon = Icons.Default.ArrowDownward,
+                            label = "SPEEDTEST DOWN",
+                            value = downVal?.let { String.format("%.1f Mbps", it) } ?: "-- Mbps",
+                            color = CyberGreen
+                        )
+                        TvMetricItem(
+                            icon = Icons.Default.ArrowUpward,
+                            label = "SPEEDTEST UP",
+                            value = upVal?.let { String.format("%.1f Mbps", it) } ?: "-- Mbps",
+                            color = NeonCyan
+                        )
+                        TvMetricItem(
+                            icon = Icons.Default.NetworkCheck,
+                            label = "PING / JITTER",
+                            value = "${pingVal?.let { "${it}ms" } ?: "--"} / ${jitterVal?.let { "${it}ms" } ?: "--"}",
+                            color = CyberGreen
+                        )
+                        TvMetricItem(
+                            icon = Icons.Default.Public,
+                            label = "PACKET LOSS",
+                            value = "$lossVal%",
+                            color = if (lossVal == 0) CyberGreen else ConnectingOrange
+                        )
+                    }
+                }
+
+                // Detailed Connection & Exit Node Info
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(SurfaceCard)
+                        .border(1.dp, SurfaceBorder, RoundedCornerShape(12.dp))
+                        .padding(14.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        val exitIp = snapshot?.publicIp ?: if (isDiagnosing) "Checking..." else (profile?.host ?: "--")
+                        val exitLoc = listOfNotNull(snapshot?.country, snapshot?.colo)
+                            .filter { it.isNotEmpty() && it != "--" }
+                            .joinToString(" • ")
+                            .ifEmpty { "--" }
+                        val dnsStr = snapshot?.dnsLatencyMs?.let { "${it}ms" } ?: "--"
+                        val protoStr = if (profile?.awg3 != null) "AmneziaWG 3.1" else profile?.protocol?.displayName ?: "--"
+
+                        TvDiagRow("Public Exit IP & Edge", "$exitIp ($exitLoc)")
+                        TvDiagRow("Protocol & Endpoint", "$protoStr  •  ${profile?.endpointString ?: "--"}")
+                        TvDiagRow("Tunnel IP & MTU", "${profile?.clientIp ?: "--"}  •  MTU ${profile?.mtu ?: 1280}  •  Keepalive ${profile?.persistentKeepaliveValue ?: "25"}s")
+                        TvDiagRow("DNS Latency & Handshake", "DNS $dnsStr  •  Handshake ${stats.formattedHandshakeAge}")
+                        TvDiagRow("Session Traffic", "Downloaded ${stats.formattedBytesIn}  •  Uploaded ${stats.formattedBytesOut}")
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                TvFocusableButton(
+                    text = if (isSpeedtesting) "RUNNING SPEEDTEST..." else "RUN SPEEDTEST",
+                    icon = Icons.Default.Speed,
+                    isPrimary = true,
+                    onClick = { triggerSpeedtest() },
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                )
+                TvFocusableButton(
+                    text = "REFRESH INFO",
+                    icon = Icons.Default.Refresh,
+                    isPrimary = false,
+                    onClick = { triggerDiagnostics() },
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+                )
+            }
+        },
+        dismissButton = {
+            TvFocusableButton(
+                text = "CLOSE",
+                isPrimary = false,
+                onClick = onDismiss,
+                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
             )
         }
+    )
+}
+
+@Composable
+private fun TvDiagRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = label, color = TextSecondary, fontSize = 12.sp)
+        Text(text = value, color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 

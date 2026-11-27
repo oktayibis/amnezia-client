@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
    LastUpgradeVersion = "1500"
-   version = "1.3">
+   version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
-      buildImplicitDependencies = "YES">
+      buildImplicitDependencies = "YES"
+      runPostActionsOnFailure = "NO">
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"
@@ -15,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "02FCF8CD9A8280D31AB2D168"
-               BuildableName = "AmneziaCore.framework"
+               BuildableName = "AmneziaCoreMac.framework"
                BlueprintName = "AmneziaCoreMac"
                ReferencedContainer = "container:AmneziaClient.xcodeproj">
             </BuildableReference>
@@ -29,7 +30,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "3696A0B100F369CD654E970A"
-               BuildableName = "AWG Connect.app"
+               BuildableName = "AmneziaMac.app"
                BlueprintName = "AmneziaMac"
                ReferencedContainer = "container:AmneziaClient.xcodeproj">
             </BuildableReference>
@@ -54,12 +55,13 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES">
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      onlyGenerateCoverageForSpecifiedTargets = "NO">
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "02FCF8CD9A8280D31AB2D168"
-            BuildableName = "AmneziaCore.framework"
+            BuildableName = "AmneziaCoreMac.framework"
             BlueprintName = "AmneziaCoreMac"
             ReferencedContainer = "container:AmneziaClient.xcodeproj">
          </BuildableReference>
@@ -81,11 +83,13 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "02FCF8CD9A8280D31AB2D168"
-            BuildableName = "AmneziaCore.framework"
+            BuildableName = "AmneziaCoreMac.framework"
             BlueprintName = "AmneziaCoreMac"
             ReferencedContainer = "container:AmneziaClient.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
+      <CommandLineArguments>
+      </CommandLineArguments>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -93,11 +97,13 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
+      <CommandLineArguments>
+      </CommandLineArguments>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "02FCF8CD9A8280D31AB2D168"
-            BuildableName = "AmneziaCore.framework"
+            BuildableName = "AmneziaCoreMac.framework"
             BlueprintName = "AmneziaCoreMac"
             ReferencedContainer = "container:AmneziaClient.xcodeproj">
          </BuildableReference>

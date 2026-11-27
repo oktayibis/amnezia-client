@@ -81,12 +81,28 @@ public struct ServerListView: View {
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
-                        activeSheet = .addServer
-                    }) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
+                    HStack(spacing: 16) {
+                        Button(action: {
+                            appState.measureLatency()
+                        }) {
+                            if appState.isMeasuringPing {
+                                ProgressView()
+                                    .tint(.green)
+                            } else {
+                                Image(systemName: "waveform.path.ecg")
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundColor(.green)
+                            }
+                        }
+                        .disabled(appState.isMeasuringPing)
+
+                        Button(action: {
+                            activeSheet = .addServer
+                        }) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                        }
                     }
                 }
             }

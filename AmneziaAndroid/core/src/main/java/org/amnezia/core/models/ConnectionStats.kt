@@ -6,7 +6,10 @@ data class ConnectionStats(
     val bytesInPerSecond: Long = 0L,
     val bytesOutPerSecond: Long = 0L,
     val durationSeconds: Long = 0L,
-    val latencyMs: Long? = null
+    val latencyMs: Long? = null,
+    val jitterMs: Long? = null,
+    val packetLossPercent: Int? = null,
+    val lastHandshakeEpochMs: Long? = null
 ) {
     val formattedDuration: String
         get() {
@@ -31,6 +34,18 @@ data class ConnectionStats(
 
     val formattedBytesOut: String
         get() = formatByteCount(bytesOut)
+
+    val formattedHandshakeAge: String
+        get() {
+            val hs = lastHandshakeEpochMs?.takeIf { it > 0L } ?: return "--"
+            val ageSec = ((System.currentTimeMillis() - hs) / 1000L).coerceAtLeast(0L)
+            return when {
+                ageSec < 2L -> "Just now"
+                ageSec < 60L -> "${ageSec}s ago"
+                ageSec < 3600L -> "${ageSec / 60}m ${ageSec % 60}s ago"
+                else -> "${ageSec / 3600}h ${(ageSec % 3600) / 60}m ago"
+            }
+        }
 
     private fun formatBytesRate(bytesPerSec: Long): String {
         return when {

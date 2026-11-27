@@ -41,6 +41,8 @@ public struct ConnectionStatistics: Equatable, Sendable {
     public var currentUpSpeed: Double   // bytes per second
     public var connectedSince: Date?
     public var latencyMs: Int?
+    /// Most recent completed WireGuard handshake reported by the engine.
+    public var lastHandshake: Date?
 
     public init(
         bytesIn: UInt64 = 0,
@@ -48,7 +50,8 @@ public struct ConnectionStatistics: Equatable, Sendable {
         currentDownSpeed: Double = 0,
         currentUpSpeed: Double = 0,
         connectedSince: Date? = nil,
-        latencyMs: Int? = nil
+        latencyMs: Int? = nil,
+        lastHandshake: Date? = nil
     ) {
         self.bytesIn = bytesIn
         self.bytesOut = bytesOut
@@ -56,6 +59,21 @@ public struct ConnectionStatistics: Equatable, Sendable {
         self.currentUpSpeed = currentUpSpeed
         self.connectedSince = connectedSince
         self.latencyMs = latencyMs
+        self.lastHandshake = lastHandshake
+    }
+
+    /// "--" until measured, otherwise e.g. "42 ms".
+    public var formattedLatency: String {
+        latencyMs.map { "\($0) ms" } ?? "--"
+    }
+
+    /// Age of the last handshake, e.g. "12s ago" / "2m ago", or "--".
+    public func formattedHandshakeAge(now: Date = Date()) -> String {
+        guard let lastHandshake else { return "--" }
+        let age = max(0, Int(now.timeIntervalSince(lastHandshake)))
+        if age < 60 { return "\(age)s ago" }
+        if age < 3600 { return "\(age / 60)m ago" }
+        return "\(age / 3600)h ago"
     }
 
     public var duration: TimeInterval {

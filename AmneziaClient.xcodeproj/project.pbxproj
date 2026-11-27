@@ -28,6 +28,7 @@
 		3D8FF3B382B49F18EC2CE406 /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B156892A980CB1FE53F75532 /* Network.framework */; };
 		42237F1011E33FBE45DF8FD7 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 089DBCCB5FCEA6C145FBCA11 /* libz.tbd */; };
 		42B3B6339225309BE40022B1 /* MacGlassCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF16289D7AC762C50BFA89B /* MacGlassCard.swift */; };
+		43A850B6554069AFF42D464F /* NetworkToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B690367FE9641E4EDC0EA6 /* NetworkToolsView.swift */; };
 		44AC4A290B0C517257696E04 /* PrivacyNoticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A3F8333DE205ED1A9C530A /* PrivacyNoticeView.swift */; };
 		4785D70EADEBF95FA310EEB8 /* MacMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC061ED072CB7641652C439 /* MacMainView.swift */; };
 		48D38DC3ADBABD35D7E75FAE /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B156892A980CB1FE53F75532 /* Network.framework */; };
@@ -35,6 +36,7 @@
 		4CE0DB3E4DCD337D1B53D9DE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = EDBDEDF082475B633A1491B5 /* PrivacyInfo.xcprivacy */; };
 		4EE66B5A1B545A37808C2155 /* StatusPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCA533F550747842C8274D7 /* StatusPill.swift */; };
 		5238A23FCB0DAFD1E6A23C71 /* AmneziaCoreMac.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7D439E7AA879F1F7C3578F20 /* AmneziaCoreMac.framework */; };
+		52485801B3B200FE658A990B /* UapiStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71096A719441CA728F2666DC /* UapiStatistics.swift */; };
 		576D70CC80F609D15E71DC64 /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B156892A980CB1FE53F75532 /* Network.framework */; };
 		59DDAB384639772506CDCAC0 /* AmneziaUrlDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1690A39F1D5151B4587475B2 /* AmneziaUrlDecoder.swift */; };
 		5EA19DC76B646E83033A5A3D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D6D6015CCEE5BB3076130715 /* Assets.xcassets */; };
@@ -46,10 +48,12 @@
 		6989ED6AF41FD6CAC0B4D52C /* DnsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E40D833721188EB9F9E7CBA /* DnsProvider.swift */; };
 		6EA9051C6412FA4C236DDCA0 /* NetworkExtensionTunnelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEC17D30CB6877D7CFCED4ED /* NetworkExtensionTunnelService.swift */; };
 		7072C320EF9E9B22A2812385 /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B7652E1123C130159191656 /* PacketTunnelProvider.swift */; };
+		72712153793E51C34A951F1E /* UapiStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71096A719441CA728F2666DC /* UapiStatistics.swift */; };
 		75989853A85FC374D725FD18 /* TunnelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B83283CF0C4B33C9E06620B /* TunnelService.swift */; };
 		7CD9C49623CDB34ACE219B48 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D1400B8D040D484C042DF531 /* AVFoundation.framework */; };
 		7E5F861DC8299F6746589E0A /* GlassCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F83C107ECF957D7BD7341B3D /* GlassCard.swift */; };
 		80F9462D9F7A14F37B067640 /* DnsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E28A4D0F118A9A403CC122 /* DnsSettingsView.swift */; };
+		81A4FDB84193E998E1B80812 /* LatencyProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5E69B49F3E6CC74BE96EA74 /* LatencyProbe.swift */; };
 		81DF14BFC165373440F7AB64 /* ProfileStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D46D9E42839FED9ACE46FE5C /* ProfileStorage.swift */; };
 		822128856AF685C1C383B6A4 /* AmneziaUrlDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1690A39F1D5151B4587475B2 /* AmneziaUrlDecoder.swift */; };
 		84A5E08361B1CE964DFCA40F /* DnsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E40D833721188EB9F9E7CBA /* DnsProvider.swift */; };
@@ -72,6 +76,8 @@
 		B982EF5E7FCBEA4B8D3C39C0 /* AmneziaCoreMac.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7D439E7AA879F1F7C3578F20 /* AmneziaCoreMac.framework */; };
 		BA528F0F5862CAF42CE0F97A /* NetworkExtensionTunnelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEC17D30CB6877D7CFCED4ED /* NetworkExtensionTunnelService.swift */; };
 		BD07438188B7DE623E529D77 /* WgQuickConfigParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D3F3A80A1C75520F4352DD8 /* WgQuickConfigParser.swift */; };
+		C0B6B5264C1EBEB41240552A /* UapiStatisticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AE28674B264BD85DE7CEC8F /* UapiStatisticsTests.swift */; };
+		C233CBC67ABE476A14146187 /* NetworkDiagnosticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD08136DCE14668DD3122EF /* NetworkDiagnosticsService.swift */; };
 		C2EF8BBAAF9F8D024650BF9F /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05315DAAB29D3F5A666B6D67 /* AppState.swift */; };
 		CA07658DFF730AAF84B2C88A /* MacServerListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1BCBBD2E2736BD064D72EF2 /* MacServerListView.swift */; };
 		CAFB900262CB136CDC3FADD8 /* QrCodeChunkAssembler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89456F2EC51D8A783D6BAAAB /* QrCodeChunkAssembler.swift */; };
@@ -93,8 +99,10 @@
 		EB173CC19870E0968CB2FDDE /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8AEFD997C261AF28C6C290 /* DashboardView.swift */; };
 		F1D778A5AAE2884EEFA32699 /* AmneziaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 580D8080B1F754511E54D95A /* AmneziaApp.swift */; };
 		F344CFF84A7FAABA7736DDB7 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C2C3895C3250EB2353324B41 /* PrivacyInfo.xcprivacy */; };
+		F5499CC1404FC187CAEB01F4 /* LatencyProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5E69B49F3E6CC74BE96EA74 /* LatencyProbe.swift */; };
 		F8BA4E190E57E7382C62C0A0 /* ServerShareQrView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C90E403C517C70B9D0EFB382 /* ServerShareQrView.swift */; };
 		FA7408B1D23335936D958C5B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A3C22B371BB5E404E17FD7FB /* Assets.xcassets */; };
+		FA9B5813E997121008FC288F /* NetworkDiagnosticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FD08136DCE14668DD3122EF /* NetworkDiagnosticsService.swift */; };
 		FD6BD2557EA88ACF0C1E1087 /* AmneziaCoreMac.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 7D439E7AA879F1F7C3578F20 /* AmneziaCoreMac.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FF49759D0812F82E78B61931 /* ConnectionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13C68D263CE05AFA54C8FA7 /* ConnectionState.swift */; };
 /* End PBXBuildFile section */
@@ -226,7 +234,7 @@
 /* Begin PBXFileReference section */
 		00F47ABB0F1912DA5B27E903 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		02045E1AC133101530CDF8C1 /* AmneziaCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AmneziaCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		022C8AD014BF68477209F17F /* AmneziaApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; name = AmneziaApp.app; path = "AWG Connect.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		022C8AD014BF68477209F17F /* AmneziaApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AmneziaApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		035AE0E70FF1A2FA1E2A344F /* ZlibHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZlibHelper.swift; sourceTree = "<group>"; };
 		05315DAAB29D3F5A666B6D67 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		08330B630C75604B931A2B0D /* LiveTrafficStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTrafficStatsView.swift; sourceTree = "<group>"; };
@@ -234,18 +242,20 @@
 		0AD533D32078B1AF42FB1671 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		0F401AF6B2A4B70C6F6E1060 /* AmneziaUrlDecoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmneziaUrlDecoderTests.swift; sourceTree = "<group>"; };
 		148250FE2BBE0E398E5BEF14 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		15B137068ACE618140FE70FF /* AmneziaMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = AmneziaMac.app; path = "AWG Connect.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		15B137068ACE618140FE70FF /* AmneziaMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AmneziaMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1690A39F1D5151B4587475B2 /* AmneziaUrlDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmneziaUrlDecoder.swift; sourceTree = "<group>"; };
 		17A1BB1B94EDAE2CAEFD8C97 /* MacPrivacyNoticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPrivacyNoticeView.swift; sourceTree = "<group>"; };
 		1A3DC91D0C37358BEB600CFA /* AddServerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddServerSheet.swift; sourceTree = "<group>"; };
 		1F61DEAD57931D8CDE885BF4 /* ConnectButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectButton.swift; sourceTree = "<group>"; };
+		1FD08136DCE14668DD3122EF /* NetworkDiagnosticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkDiagnosticsService.swift; sourceTree = "<group>"; };
 		2195E5B0A998713A0D988073 /* WireGuardKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WireGuardKit; path = Vendor/WireGuardKit; sourceTree = SOURCE_ROOT; };
 		226DEFEF4763CE7799B7871A /* AmneziaApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AmneziaApp.entitlements; sourceTree = "<group>"; };
 		2D3F3A80A1C75520F4352DD8 /* WgQuickConfigParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WgQuickConfigParser.swift; sourceTree = "<group>"; };
 		39FE61C886F11C0DBCA840BA /* WgQuickConfigParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WgQuickConfigParserTests.swift; sourceTree = "<group>"; };
 		44A3F8333DE205ED1A9C530A /* PrivacyNoticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyNoticeView.swift; sourceTree = "<group>"; };
-		502B1572889A8A9276C1609C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		502B1572889A8A9276C1609C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		51F87BF2C5753D8066BF2774 /* ServerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerProfile.swift; sourceTree = "<group>"; };
+		52B690367FE9641E4EDC0EA6 /* NetworkToolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkToolsView.swift; sourceTree = "<group>"; };
 		578EEC863EA62B4BC4778E83 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		580D8080B1F754511E54D95A /* AmneziaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmneziaApp.swift; sourceTree = "<group>"; };
 		584D49AF433C14AFEC141C39 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -259,8 +269,10 @@
 		6B83283CF0C4B33C9E06620B /* TunnelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunnelService.swift; sourceTree = "<group>"; };
 		6D419556BB7AE10A90BC650C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6E40D833721188EB9F9E7CBA /* DnsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DnsProvider.swift; sourceTree = "<group>"; };
+		71096A719441CA728F2666DC /* UapiStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UapiStatistics.swift; sourceTree = "<group>"; };
+		7AE28674B264BD85DE7CEC8F /* UapiStatisticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UapiStatisticsTests.swift; sourceTree = "<group>"; };
 		7B7652E1123C130159191656 /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
-		7D439E7AA879F1F7C3578F20 /* AmneziaCoreMac.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = AmneziaCoreMac.framework; path = AmneziaCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7D439E7AA879F1F7C3578F20 /* AmneziaCoreMac.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AmneziaCoreMac.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E3A7A67E7E8A39EFA88E39B /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		883847ED651D0E0117E1EBF0 /* ServerListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerListView.swift; sourceTree = "<group>"; };
 		89456F2EC51D8A783D6BAAAB /* QrCodeChunkAssembler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QrCodeChunkAssembler.swift; sourceTree = "<group>"; };
@@ -273,7 +285,7 @@
 		B156892A980CB1FE53F75532 /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
 		B1BCBBD2E2736BD064D72EF2 /* MacServerListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacServerListView.swift; sourceTree = "<group>"; };
 		C020E0D2D9395F01E04AAB8E /* MacDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacDashboardView.swift; sourceTree = "<group>"; };
-		C2C3895C3250EB2353324B41 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		C2C3895C3250EB2353324B41 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		C5E4B687FB54A12900BCDA12 /* ManualUrlInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualUrlInputView.swift; sourceTree = "<group>"; };
 		C7F46521244C725CF451B70B /* MacAppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacAppState.swift; sourceTree = "<group>"; };
 		C90E403C517C70B9D0EFB382 /* ServerShareQrView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerShareQrView.swift; sourceTree = "<group>"; };
@@ -291,8 +303,9 @@
 		E7B5E6724D0B669646D35D80 /* AmneziaTunnelMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AmneziaTunnelMac.entitlements; sourceTree = "<group>"; };
 		E95B7F773F00A27536D7AA14 /* AmneziaTunnel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AmneziaTunnel.entitlements; sourceTree = "<group>"; };
 		ED23234609D48DC4F358A197 /* AmneziaMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmneziaMacApp.swift; sourceTree = "<group>"; };
-		EDBDEDF082475B633A1491B5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		EDBDEDF082475B633A1491B5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		EEC17D30CB6877D7CFCED4ED /* NetworkExtensionTunnelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkExtensionTunnelService.swift; sourceTree = "<group>"; };
+		F5E69B49F3E6CC74BE96EA74 /* LatencyProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LatencyProbe.swift; sourceTree = "<group>"; };
 		F6742E492CB31D188915E046 /* MacSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSettingsView.swift; sourceTree = "<group>"; };
 		F83C107ECF957D7BD7341B3D /* GlassCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassCard.swift; sourceTree = "<group>"; };
 		FB8AEFD997C261AF28C6C290 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
@@ -426,8 +439,11 @@
 		41B1C33F1B8FFE3AB47CEAE2 /* Tunnel */ = {
 			isa = PBXGroup;
 			children = (
+				F5E69B49F3E6CC74BE96EA74 /* LatencyProbe.swift */,
+				1FD08136DCE14668DD3122EF /* NetworkDiagnosticsService.swift */,
 				EEC17D30CB6877D7CFCED4ED /* NetworkExtensionTunnelService.swift */,
 				6B83283CF0C4B33C9E06620B /* TunnelService.swift */,
+				71096A719441CA728F2666DC /* UapiStatistics.swift */,
 			);
 			path = Tunnel;
 			sourceTree = "<group>";
@@ -448,6 +464,7 @@
 				0F401AF6B2A4B70C6F6E1060 /* AmneziaUrlDecoderTests.swift */,
 				E0DB218DB1A4804B726D50E4 /* ProfileStorageTests.swift */,
 				D003F46FE4E8D36956ABB69E /* QrChunkAssemblerTests.swift */,
+				7AE28674B264BD85DE7CEC8F /* UapiStatisticsTests.swift */,
 				39FE61C886F11C0DBCA840BA /* WgQuickConfigParserTests.swift */,
 				ADAD3EE92A7DF0B93DFD047B /* ZlibHelperTests.swift */,
 			);
@@ -531,6 +548,7 @@
 				65ED719C30739DCF5E5EE641 /* ConnectionStatusCard.swift */,
 				FB8AEFD997C261AF28C6C290 /* DashboardView.swift */,
 				08330B630C75604B931A2B0D /* LiveTrafficStatsView.swift */,
+				52B690367FE9641E4EDC0EA6 /* NetworkToolsView.swift */,
 			);
 			path = Dashboard;
 			sourceTree = "<group>";
@@ -980,6 +998,7 @@
 				B2A63FBDD42FEB1C7807F9DA /* HapticFeedback.swift in Sources */,
 				62C6D728D69ADFB60F53D2C2 /* LiveTrafficStatsView.swift in Sources */,
 				399DE9E9458B31D4D1563E5E /* ManualUrlInputView.swift in Sources */,
+				43A850B6554069AFF42D464F /* NetworkToolsView.swift in Sources */,
 				44AC4A290B0C517257696E04 /* PrivacyNoticeView.swift in Sources */,
 				18B1D900444BBE8B71C8BF60 /* QrPhotoPickerView.swift in Sources */,
 				D40D62F7976EEFDC2647A3C5 /* QrScannerView.swift in Sources */,
@@ -1030,6 +1049,7 @@
 				E3576870E4579478411B3D9F /* AmneziaUrlDecoderTests.swift in Sources */,
 				3C73FEF217334ACD233BC237 /* ProfileStorageTests.swift in Sources */,
 				DB4E8D2DD709F5F40AE69794 /* QrChunkAssemblerTests.swift in Sources */,
+				C0B6B5264C1EBEB41240552A /* UapiStatisticsTests.swift in Sources */,
 				90935D225A6583C41FE530CF /* WgQuickConfigParserTests.swift in Sources */,
 				A6D12B422050A2EB4739BCDD /* ZlibHelperTests.swift in Sources */,
 			);
@@ -1043,11 +1063,14 @@
 				9B540AED8FCD490A46FEBDEF /* AwgParameters.swift in Sources */,
 				1F2FDBE31F6475030EF54524 /* ConnectionState.swift in Sources */,
 				84A5E08361B1CE964DFCA40F /* DnsProvider.swift in Sources */,
+				F5499CC1404FC187CAEB01F4 /* LatencyProbe.swift in Sources */,
+				C233CBC67ABE476A14146187 /* NetworkDiagnosticsService.swift in Sources */,
 				BA528F0F5862CAF42CE0F97A /* NetworkExtensionTunnelService.swift in Sources */,
 				DFE608B552480B282C86425A /* ProfileStorage.swift in Sources */,
 				93D31BB38145A179DAB42A98 /* QrCodeChunkAssembler.swift in Sources */,
 				D61EA49DCF13F8F0A60031C7 /* ServerProfile.swift in Sources */,
 				75989853A85FC374D725FD18 /* TunnelService.swift in Sources */,
+				52485801B3B200FE658A990B /* UapiStatistics.swift in Sources */,
 				BD07438188B7DE623E529D77 /* WgQuickConfigParser.swift in Sources */,
 				16F14A978BC7BA5972CB31AA /* ZlibHelper.swift in Sources */,
 			);
@@ -1061,11 +1084,14 @@
 				88232263A0FE4CD92D179789 /* AwgParameters.swift in Sources */,
 				FF49759D0812F82E78B61931 /* ConnectionState.swift in Sources */,
 				6989ED6AF41FD6CAC0B4D52C /* DnsProvider.swift in Sources */,
+				81A4FDB84193E998E1B80812 /* LatencyProbe.swift in Sources */,
+				FA9B5813E997121008FC288F /* NetworkDiagnosticsService.swift in Sources */,
 				6EA9051C6412FA4C236DDCA0 /* NetworkExtensionTunnelService.swift in Sources */,
 				81DF14BFC165373440F7AB64 /* ProfileStorage.swift in Sources */,
 				CAFB900262CB136CDC3FADD8 /* QrCodeChunkAssembler.swift in Sources */,
 				60C7077A3D24EC9F340C4F86 /* ServerProfile.swift in Sources */,
 				021DABFAC5FED29D14606EFE /* TunnelService.swift in Sources */,
+				72712153793E51C34A951F1E /* UapiStatistics.swift in Sources */,
 				A094EBD239A4FFAB4880B199 /* WgQuickConfigParser.swift in Sources */,
 				E93584FEC7E15BE0F8ED93B2 /* ZlibHelper.swift in Sources */,
 			);
@@ -1193,10 +1219,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(BUILT_PRODUCTS_DIR)",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited) $(BUILT_PRODUCTS_DIR)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.oktayibis.awgconnect.mac.tunnel;
 				PRODUCT_NAME = AmneziaTunnelMac;
 				SDKROOT = macosx;
@@ -1522,10 +1545,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(BUILT_PRODUCTS_DIR)",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited) $(BUILT_PRODUCTS_DIR)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.oktayibis.awgconnect.tunnel;
 				PRODUCT_NAME = AmneziaTunnel;
 				SDKROOT = iphoneos;
@@ -1545,10 +1565,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(BUILT_PRODUCTS_DIR)",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited) $(BUILT_PRODUCTS_DIR)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.oktayibis.awgconnect.tunnel;
 				PRODUCT_NAME = AmneziaTunnel;
 				SDKROOT = iphoneos;
@@ -1608,10 +1625,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(BUILT_PRODUCTS_DIR)",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited) $(BUILT_PRODUCTS_DIR)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.oktayibis.awgconnect.mac.tunnel;
 				PRODUCT_NAME = AmneziaTunnelMac;
 				SDKROOT = macosx;

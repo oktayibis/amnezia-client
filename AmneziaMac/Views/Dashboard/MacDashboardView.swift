@@ -211,14 +211,37 @@ public struct MacDashboardView: View {
 
     // MARK: - Duration Badge
     private var connectionDurationBadge: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "clock.fill")
-                .foregroundColor(.green)
-                .font(.system(size: 12))
+        HStack(spacing: 14) {
+            HStack(spacing: 6) {
+                Image(systemName: "clock.fill")
+                    .foregroundColor(.green)
+                    .font(.system(size: 12))
 
-            Text("Connected for \(appState.connectionStats.formattedDuration)")
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundColor(.white.opacity(0.9))
+                Text("Connected for \(appState.connectionStats.formattedDuration)")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white.opacity(0.9))
+            }
+
+            if let ping = appState.connectionStats.latencyMs ?? appState.selectedProfile?.pingMs {
+                Text("•")
+                    .foregroundColor(.secondary)
+                HStack(spacing: 4) {
+                    Image(systemName: "waveform.path.ecg")
+                        .foregroundColor(.green)
+                        .font(.system(size: 11))
+                    Text("\(ping) ms")
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundColor(.green)
+                }
+            }
+
+            if appState.connectionStats.lastHandshake != nil {
+                Text("•")
+                    .foregroundColor(.secondary)
+                Text("Handshake \(appState.connectionStats.formattedHandshakeAge())")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundColor(.secondary)
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)

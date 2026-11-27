@@ -21,6 +21,17 @@ public final class AppState: ObservableObject {
     @Published public var detectedClipboardUrl: String? = nil
     @Published public var isSimulatedTunnel: Bool = false
     @Published public var isPrivacyNoticePresented: Bool = false
+    @Published public var isMeasuringPing: Bool = false
+
+    // Network Tools & Speedtest State
+    @Published public var isNetworkToolsPresented: Bool = false
+    @Published public var isRunningSpeedtest: Bool = false
+    @Published public var speedtestPhase: SpeedtestPhase = .idle
+    @Published public var speedtestResult: SpeedtestResult? = nil
+    @Published public var isRunningPingSeries: Bool = false
+    @Published public var pingJitterReport: PingJitterReport? = nil
+    @Published public var isCheckingIdentity: Bool = false
+    @Published public var networkIdentity: NetworkIdentityReport? = nil
 
     public enum SheetType: Identifiable {
         case qrScanner
@@ -64,6 +75,105 @@ public final class AppState: ObservableObject {
         
         loadProfiles()
         setupTunnelCallbacks()
+        measureLatency()
+    }
+
+    public func measureLatency() {
+        guard !isMeasuringPing else { return }
+        isMeasuringPing = true
+        HapticFeedback.selection()
+
+        let activeProfile = selectedProfile
+        var targets = [LatencyProbe.Target]()
+        if let dns = activeProfile?.dnsServers.first, !dns.isEmpty {
+            targets.append(LatencyProbe.Target(host: dns, port: 53))
+            targets.append(LatencyProbe.Target(host: dns, port: 443))
+        }
+        targets.append(contentsOf: LatencyProbe.defaultTargets)
+
+        Task {
+            let ms = await LatencyProbe.measure(targets: targets)
+            self.isMeasuringPing = false
+            if let ms {
+                self.connectionStats.latencyMs = ms
+                if var profile = self.selectedProfile {
+                    profile.pingMs = ms
+                    self.selectedProfile = profile
+                    self.storage.updateProfile(profile)
+                    if let idx = self.profiles.firstIndex(where: { $0.id == profile.id }) {
+                        self.profiles[idx].pingMs = ms
+                    }
+                }
+            }
+        }
+    }
+
+    public func runSpeedtest() {
+        guard !isRunningSpeedtest else { return }
+        isRunningSpeedtest = true
+        speedtestPhase = .ping
+        HapticFeedback.selection()
+        let dns = selectedProfile?.dnsServers.first
+
+        Task {
+            do {
+                let result = try await NetworkDiagnosticsService.runSpeedtest(
+                    dnsServer: dns,
+                    onPhase: { [weak self] phase in
+                        Task { @MainActor in
+                            self?.speedtestPhase = phase
+                        }
+                    }
+                )
+                self.speedtestResult = result
+                self.speedtestPhase = .completed
+                self.isRunningSpeedtest = false
+                if result.pingMs > 0 {
+                    self.connectionStats.latencyMs = result.pingMs
+                }
+                HapticFeedback.notification(type: .success)
+            } catch {
+                self.speedtestPhase = .failed
+                self.isRunningSpeedtest = false
+                self.errorMessage = error.localizedDescription
+                HapticFeedback.notification(type: .error)
+            }
+        }
+    }
+
+    public func runPingDiagnostics() {
+        guard !isRunningPingSeries else { return }
+        isRunningPingSeries = true
+        let dns = selectedProfile?.dnsServers.first
+
+        Task {
+            let report = await NetworkDiagnosticsService.runPingSeries(dnsServer: dns, count: 5)
+            self.pingJitterReport = report
+            self.isRunningPingSeries = false
+            if report.avgMs > 0 {
+                self.connectionStats.latencyMs = report.avgMs
+                if var profile = self.selectedProfile {
+                    profile.pingMs = report.avgMs
+                    self.selectedProfile = profile
+                    self.storage.updateProfile(profile)
+                    if let idx = self.profiles.firstIndex(where: { $0.id == profile.id }) {
+                        self.profiles[idx].pingMs = report.avgMs
+                    }
+                }
+            }
+        }
+    }
+
+    public func checkNetworkIdentity() {
+        guard !isCheckingIdentity else { return }
+        isCheckingIdentity = true
+        let dns = selectedProfile?.dnsServers.first
+
+        Task {
+            let identity = await NetworkDiagnosticsService.fetchNetworkIdentity(dnsServer: dns)
+            self.networkIdentity = identity
+            self.isCheckingIdentity = false
+        }
     }
 
     #if DEBUG
@@ -105,7 +215,16 @@ public final class AppState: ObservableObject {
             }
             ne.onStatsChange = { [weak self] stats in
                 Task { @MainActor in
-                    self?.connectionStats = stats
+                    guard let self else { return }
+                    self.connectionStats = stats
+                    if let ms = stats.latencyMs, var profile = self.selectedProfile, profile.pingMs != ms {
+                        profile.pingMs = ms
+                        self.selectedProfile = profile
+                        self.storage.updateProfile(profile)
+                        if let idx = self.profiles.firstIndex(where: { $0.id == profile.id }) {
+                            self.profiles[idx].pingMs = ms
+                        }
+                    }
                 }
             }
         }
