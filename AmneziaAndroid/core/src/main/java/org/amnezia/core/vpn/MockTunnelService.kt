@@ -60,7 +60,10 @@ class MockTunnelService(
                     bytesInPerSecond = rateIn,
                     bytesOutPerSecond = rateOut,
                     durationSeconds = duration,
-                    latencyMs = latency
+                    latencyMs = latency,
+                    jitterMs = Random.nextLong(1, 8),
+                    packetLossPercent = 0,
+                    lastHandshakeEpochMs = startTime
                 )
             }
         }

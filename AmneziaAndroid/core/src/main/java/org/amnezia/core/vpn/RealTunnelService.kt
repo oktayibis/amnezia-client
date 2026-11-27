@@ -103,7 +103,7 @@ class RealTunnelService(
 
             _state.value = ConnectionState.Connected
             notificationHelper.showConnected(profile)
-            startStatsPolling(profile)
+            startStatsPolling(profile, options.dnsOverride)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to start AmneziaWG tunnel", e)
             _state.value = ConnectionState.Error(e.localizedMessage ?: "Failed to establish VPN tunnel")
@@ -146,20 +146,54 @@ class RealTunnelService(
         }
     }
 
-    private fun startStatsPolling(profile: ServerProfile) {
+    private fun startStatsPolling(profile: ServerProfile, dnsOverride: List<String>? = null) {
         stopStatsPolling()
         val connectStartTime = System.currentTimeMillis()
 
         statsJob = scope.launch(Dispatchers.Default) {
             var lastRx = 0L
             var lastTx = 0L
+            var currentLatencyMs: Long? = profile.pingMs
+            var currentJitterMs: Long? = null
+            var lastPingTimeMs = 0L
+            var pingInFlight = false
 
             while (isActive && _state.value is ConnectionState.Connected) {
+                val now = System.currentTimeMillis()
+                if (!pingInFlight && (currentLatencyMs == null || now - lastPingTimeMs >= PING_INTERVAL_MS)) {
+                    pingInFlight = true
+                    lastPingTimeMs = now
+                    launch(Dispatchers.IO) {
+                        try {
+                            val measured = LatencyProbe.measureTunnelLatencyMs(profile, dnsOverride)
+                            if (measured != null) {
+                                val prev = currentLatencyMs
+                                val jitter = if (prev != null) kotlin.math.abs(measured - prev) else 0L
+                                currentLatencyMs = measured
+                                currentJitterMs = jitter
+                                profile.pingMs = measured
+                                if (_state.value is ConnectionState.Connected) {
+                                    _stats.value = _stats.value.copy(
+                                        latencyMs = measured,
+                                        jitterMs = jitter
+                                    )
+                                }
+                            }
+                        } finally {
+                            pingInFlight = false
+                        }
+                    }
+                }
+
                 delay(1000)
                 try {
                     val statistics = backend.getStatistics(tunnel)
                     val currentRx = statistics.totalRx()
                     val currentTx = statistics.totalTx()
+                    val latestHandshakeMs = statistics.peers()
+                        .mapNotNull { statistics.peer(it)?.latestHandshakeEpochMillis() }
+                        .maxOrNull()
+                        ?.takeIf { it > 0L }
 
                     val speedDown = if (lastRx > 0L) (currentRx - lastRx).coerceAtLeast(0L) else 0L
                     val speedUp = if (lastTx > 0L) (currentTx - lastTx).coerceAtLeast(0L) else 0L
@@ -175,7 +209,9 @@ class RealTunnelService(
                         bytesInPerSecond = speedDown,
                         bytesOutPerSecond = speedUp,
                         durationSeconds = durationSecs,
-                        latencyMs = profile.pingMs
+                        latencyMs = currentLatencyMs,
+                        jitterMs = currentJitterMs,
+                        lastHandshakeEpochMs = latestHandshakeMs
                     )
                 } catch (e: Exception) {
                     Log.v(TAG, "Stats poll exception: ${e.message}")
@@ -212,5 +248,6 @@ class RealTunnelService(
         private const val TAG = "RealTunnelService"
         private const val HANDSHAKE_TIMEOUT_MS = 15_000L
         private const val HANDSHAKE_POLL_MS = 500L
+        private const val PING_INTERVAL_MS = 5_000L
     }
 }

@@ -70,7 +70,8 @@ public final class MockTunnelService: TunnelService, @unchecked Sendable {
             currentDownSpeed: 250_000,
             currentUpSpeed: 80_000,
             connectedSince: Date(),
-            latencyMs: profile.pingMs ?? Int.random(in: 18...45)
+            latencyMs: profile.pingMs ?? Int.random(in: 18...45),
+            lastHandshake: Date()
         )
 
         lock.withLock {

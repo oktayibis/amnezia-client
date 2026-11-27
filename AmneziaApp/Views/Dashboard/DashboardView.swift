@@ -16,7 +16,7 @@ public struct DashboardView: View {
                 backgroundLayer
 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 24) {
+                    VStack(spacing: 14) {
                         // Header Status Pill
                         headerSection
 
@@ -26,22 +26,17 @@ public struct DashboardView: View {
                         }
 
                         // Centerpiece Connect Button
-                        ConnectButton(appState: appState)
-                            .padding(.vertical, 8)
+                        VStack(spacing: 2) {
+                            ConnectButton(appState: appState)
+                                .frame(height: 230)
 
-                        // Uptime duration
-                        if appState.connectionState.isConnected {
-                            HStack(spacing: 6) {
-                                Image(systemName: "clock.fill")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.green)
-
-                                Text("Connected for \(appState.connectionStats.formattedDuration)")
-                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.white.opacity(0.85))
-                            }
-                            .transition(.opacity.combined(with: .scale))
+                            Text(connectionSubtitle)
+                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                .foregroundColor(.white.opacity(0.65))
                         }
+
+                        // Security Telemetry Chips (matching Android TV & Mobile)
+                        securityChipsRow
 
                         // Server Selector Card
                         ConnectionStatusCard(appState: appState) {
@@ -52,13 +47,13 @@ public struct DashboardView: View {
                             }
                         }
 
-                        // Real-time Traffic Stats
+                        // Real-time Traffic Stats (Ping, Download, Upload, Duration)
                         LiveTrafficStatsView(appState: appState)
 
-                        Spacer(minLength: 32)
+                        Spacer(minLength: 24)
                     }
                     .padding(.horizontal, 20)
-                    .padding(.top, 16)
+                    .padding(.top, 8)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -102,6 +97,9 @@ public struct DashboardView: View {
             .sheet(isPresented: $appState.isAddServerPresented) {
                 AddServerSheet(appState: appState)
             }
+            .sheet(isPresented: $appState.isNetworkToolsPresented) {
+                NetworkToolsView(appState: appState)
+            }
             .alert("AWG Connect", isPresented: Binding(
                 get: { appState.errorMessage != nil },
                 set: { if !$0 { appState.errorMessage = nil } }
@@ -127,6 +125,80 @@ public struct DashboardView: View {
     }
 
     // MARK: - Subviews
+
+    private var connectionSubtitle: String {
+        if appState.connectionState.isConnected {
+            return "Tunnel is active & secured"
+        } else if appState.connectionState.isBusy {
+            return "Establishing tunnel..."
+        } else {
+            return "Tap power button to connect"
+        }
+    }
+
+    private var securityChipsRow: some View {
+        HStack(spacing: 6) {
+            securityChip(icon: "checkmark.shield.fill", label: "Zero logs")
+            securityChip(icon: "bolt.shield.fill", label: "AmneziaWG")
+            securityChip(icon: "lock.icloud.fill", label: "Private DNS")
+            Button(action: {
+                appState.measureLatency()
+            }) {
+                HStack(spacing: 4) {
+                    if appState.isMeasuringPing {
+                        ProgressView()
+                            .scaleEffect(0.65)
+                            .tint(.green)
+                    } else {
+                        Image(systemName: "waveform.path.ecg")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.green)
+                    }
+                    Text(appState.connectionStats.latencyMs.map { "\($0) ms" }
+                         ?? appState.selectedProfile?.pingMs.map { "\($0) ms" }
+                         ?? "Ping")
+                        .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.85))
+                        .fixedSize(horizontal: true, vertical: false)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill(Color.green.opacity(0.14))
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.green.opacity(0.35), lineWidth: 1)
+                        )
+                )
+            }
+            .buttonStyle(.plain)
+            .disabled(appState.isMeasuringPing)
+        }
+    }
+
+    private func securityChip(icon: String, label: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundColor(.green)
+            Text(label)
+                .font(.system(size: 10.5, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.8))
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(
+            Capsule()
+                .fill(Color.white.opacity(0.06))
+                .overlay(
+                    Capsule()
+                        .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                )
+        )
+    }
 
     private var headerSection: some View {
         HStack {

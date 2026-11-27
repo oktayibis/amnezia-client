@@ -28,22 +28,37 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
+import org.amnezia.core.models.ConnectionStats
+import org.amnezia.core.models.ServerProfile
+import org.amnezia.core.vpn.NetworkDiagnosticsTool
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -225,17 +240,22 @@ fun DashboardScreen(
             }
 
             // Section 3: Bottom Section (Security telemetry chips + Traffic Stats + Server Card)
+            var showDiagnosticsDialog by remember { mutableStateOf(false) }
+
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Live traffic meters
                 if (providesTrafficStats) {
-                    LiveTrafficStatsView(stats = stats)
+                    LiveTrafficStatsView(
+                        stats = stats,
+                        onOpenDiagnostics = { showDiagnosticsDialog = true }
+                    )
                     Spacer(modifier = Modifier.height(14.dp))
                 }
 
-                // Official M3 AssistChips for security features
+                // Official M3 AssistChips for security features & Speedtest tool
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -244,7 +264,11 @@ fun DashboardScreen(
                 ) {
                     M3SecurityChip(icon = Icons.Default.Shield, label = "Zero logs")
                     M3SecurityChip(icon = Icons.Default.Bolt, label = "AmneziaWG")
-                    M3SecurityChip(icon = Icons.Default.Dns, label = "Private DNS")
+                    M3SecurityChip(
+                        icon = Icons.Default.Speed,
+                        label = "Speedtest",
+                        onClick = { showDiagnosticsDialog = true }
+                    )
                 }
 
                 // Selected Server Card
@@ -254,6 +278,15 @@ fun DashboardScreen(
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            if (showDiagnosticsDialog) {
+                MobileDiagnosticsDialog(
+                    appState = appState,
+                    stats = stats,
+                    profile = selectedProfile,
+                    onDismiss = { showDiagnosticsDialog = false }
+                )
             }
         }
     }
@@ -266,10 +299,11 @@ fun DashboardScreen(
 private fun M3SecurityChip(
     icon: ImageVector,
     label: String,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     AssistChip(
-        onClick = {},
+        onClick = onClick,
         label = {
             Text(
                 text = label,
@@ -294,5 +328,186 @@ private fun M3SecurityChip(
         ),
         modifier = modifier
     )
+}
+
+@Composable
+private fun MobileDiagnosticsDialog(
+    appState: MobileAppState,
+    stats: ConnectionStats,
+    profile: ServerProfile?,
+    onDismiss: () -> Unit
+) {
+    val scope = rememberCoroutineScope()
+    var snapshot by remember { mutableStateOf<NetworkDiagnosticsTool.DiagnosticsSnapshot?>(null) }
+    var isDiagnosing by remember { mutableStateOf(false) }
+    var isSpeedtesting by remember { mutableStateOf(false) }
+    var phaseText by remember { mutableStateOf<String?>(null) }
+    var liveDownMbps by remember { mutableStateOf<Double?>(null) }
+    var liveUpMbps by remember { mutableStateOf<Double?>(null) }
+    var speedtestResult by remember { mutableStateOf<NetworkDiagnosticsTool.SpeedtestResult?>(null) }
+
+    fun refreshDiagnostics() {
+        if (isDiagnosing) return
+        isDiagnosing = true
+        scope.launch {
+            try {
+                snapshot = NetworkDiagnosticsTool.runDiagnostics(
+                    profile = profile,
+                    dnsOverride = appState.settings.resolveDnsOverride()
+                )
+            } finally {
+                isDiagnosing = false
+            }
+        }
+    }
+
+    fun startSpeedtest() {
+        if (isSpeedtesting) return
+        isSpeedtesting = true
+        speedtestResult = null
+        liveDownMbps = null
+        liveUpMbps = null
+        scope.launch {
+            try {
+                val res = NetworkDiagnosticsTool.runSpeedtest(
+                    profile = profile,
+                    dnsOverride = appState.settings.resolveDnsOverride()
+                ) { phase, down, up ->
+                    phaseText = phase
+                    if (down != null) liveDownMbps = down
+                    if (up != null) liveUpMbps = up
+                }
+                speedtestResult = res
+                snapshot = NetworkDiagnosticsTool.DiagnosticsSnapshot(
+                    publicIp = res.publicIp ?: snapshot?.publicIp,
+                    country = res.country ?: snapshot?.country,
+                    colo = res.colo ?: snapshot?.colo,
+                    pingMs = res.pingMs ?: snapshot?.pingMs,
+                    jitterMs = res.jitterMs ?: snapshot?.jitterMs,
+                    packetLossPercent = res.packetLossPercent,
+                    dnsLatencyMs = res.dnsLatencyMs ?: snapshot?.dnsLatencyMs
+                )
+            } finally {
+                isSpeedtesting = false
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        refreshDiagnostics()
+    }
+
+    val downMbps = speedtestResult?.downloadMbps ?: liveDownMbps
+    val upMbps = speedtestResult?.uploadMbps ?: liveUpMbps
+    val pingMs = speedtestResult?.pingMs ?: snapshot?.pingMs ?: stats.latencyMs
+    val jitterMs = speedtestResult?.jitterMs ?: snapshot?.jitterMs ?: stats.jitterMs
+    val lossPct = speedtestResult?.packetLossPercent ?: snapshot?.packetLossPercent ?: 0
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Speed,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Speedtest & Diagnostics",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (isDiagnosing || isSpeedtesting) {
+                    Text(
+                        text = phaseText ?: "Probing tunnel metrics...",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("DOWNLOAD", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            text = downMbps?.let { String.format("%.1f Mbps", it) } ?: "-- Mbps",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("UPLOAD", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            text = upMbps?.let { String.format("%.1f Mbps", it) } ?: "-- Mbps",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                val exitIp = snapshot?.publicIp ?: if (isDiagnosing) "Checking..." else (profile?.host ?: "--")
+                val exitLoc = listOfNotNull(snapshot?.country, snapshot?.colo)
+                    .filter { it.isNotEmpty() && it != "--" }
+                    .joinToString(" • ")
+                    .ifEmpty { "--" }
+
+                DiagInfoRow("Ping / Jitter / Loss", "${pingMs?.let { "${it}ms" } ?: "--"} / ${jitterMs?.let { "${it}ms" } ?: "--"} / $lossPct%")
+                DiagInfoRow("DNS Latency", snapshot?.dnsLatencyMs?.let { "${it}ms" } ?: "--")
+                DiagInfoRow("Public Exit IP", "$exitIp ($exitLoc)")
+                DiagInfoRow("Tunnel IP & MTU", "${profile?.clientIp ?: "--"} • MTU ${profile?.mtu ?: 1280}")
+                DiagInfoRow("Last Handshake", stats.formattedHandshakeAge)
+                DiagInfoRow("Session Traffic", "↓ ${stats.formattedBytesIn} • ↑ ${stats.formattedBytesOut}")
+            }
+        },
+        confirmButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = { refreshDiagnostics() }, enabled = !isDiagnosing && !isSpeedtesting) {
+                    Icon(imageVector = Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Refresh")
+                }
+                Button(onClick = { startSpeedtest() }, enabled = !isSpeedtesting) {
+                    Text(if (isSpeedtesting) "Testing..." else "Run Speedtest")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
+    )
+}
+
+@Composable
+private fun DiagInfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
 }
 
